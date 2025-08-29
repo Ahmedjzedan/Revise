@@ -7,6 +7,7 @@ import OpenBookIcon from "@/public/svgs/openbook.svg"; // Assuming this path is 
 import { motion } from "framer-motion";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
+import path from "path";
 
 export default function ClientHeader() {
   const pathname = usePathname();
@@ -33,29 +34,69 @@ export default function ClientHeader() {
   return (
     <header
       className={
-        pathname === "/"
+        pathname === "/" || pathname === "/login" || pathname === "/signup"
           ? "relative flex flex-col justify-center items-center space-y-1 my-20"
           : "relative flex flex-col justify-center items-center row-start-1 col-start-1 col-span-1 pb-5"
       }
     >
       {/* Loads the flickers blur only on main menu - uses motion */}
-      {pathname === "/" && (
-        <motion.div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-neutral-300/70 blur-3xl -z-10 rounded-full"
-          initial={{ opacity: 0.0 }}
-          animate={{
-            opacity: [0.3, 1.0, 0.3],
-          }}
-          transition={{ duration: 5, repeat: Infinity }}
-        ></motion.div>
+      {(pathname === "/" ||
+        pathname === "/login" ||
+        pathname === "/signup") && (
+        <>
+          <motion.div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-neutral-300/70 blur-3xl -z-10 rounded-full"
+            initial={{ opacity: 0.0 }}
+            animate={{
+              opacity: [0.3, 1.0, 0.3],
+            }}
+            transition={{ duration: 5, repeat: Infinity }}
+          ></motion.div>
+          <motion.div
+            className="fixed top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-neutral-300/70 blur-3xl -z-10 rounded-full"
+            initial={{ opacity: 0.0 }}
+            animate={{
+              opacity: [0.3, 1.0, 0.3],
+            }}
+            transition={{ duration: 4, repeat: Infinity }}
+          ></motion.div>
+          <motion.div
+            className="fixed top-1 right-[-10rem] -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-neutral-300/70 blur-3xl -z-10 rounded-full"
+            initial={{ opacity: 0.0 }}
+            animate={{
+              opacity: [0.3, 1.0, 0.3],
+            }}
+            transition={{ duration: 2, repeat: Infinity }}
+          ></motion.div>
+          <motion.div
+            className="fixed bottom-[-15rem] right-[-10rem] -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-neutral-300/70 blur-3xl -z-10 rounded-full"
+            initial={{ opacity: 0.0 }}
+            animate={{
+              opacity: [0.3, 1.0, 0.3],
+            }}
+            transition={{ duration: 3, repeat: Infinity }}
+          ></motion.div>
+        </>
       )}
       {/* Title and Logo - uses motion layout and variants */}
       <motion.div
         className="relative z-10 flex flex-col items-center p-5"
         layout // Requires motion
         variants={titleVariants}
-        initial={currentPath === "/" ? "current" : "nav"}
-        animate={pathname === "/" ? "current" : "nav"}
+        initial={
+          currentPath === "/" ||
+          currentPath === "/login" ||
+          currentPath === "/signup"
+            ? "current"
+            : "nav"
+        }
+        animate={
+          pathname === "/" ||
+          currentPath === "/login" ||
+          currentPath === "/signup"
+            ? currentPath
+            : "nav"
+        }
       >
         <Image src={OpenBookIcon} height={50} width={50} alt="Open book logo" />
         <Link href={"/"} className="text-5xl text-white">
@@ -63,7 +104,7 @@ export default function ClientHeader() {
         </Link>
       </motion.div>
       {/* Border animation - uses motion */}
-      {pathname !== "/" && (
+      {pathname !== "/" && pathname !== "/login" && pathname !== "/signup" && (
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: "70%" }}

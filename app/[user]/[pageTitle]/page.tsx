@@ -13,7 +13,7 @@ export default async function Page({ params }: PageProps) {
   const { user, pageTitle } = await params;
   return (
     <>
-      <div className="h-full col-start-1 col-span-1">
+      <div className="h-full col-start-1 col-span-1 flex flex-col overflow-hidden">
         <SideBar userId={user} currentPageTitle={pageTitle} />
       </div>
 
