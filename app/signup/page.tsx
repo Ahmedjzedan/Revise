@@ -1,15 +1,21 @@
 "use client";
-import { login } from "@/app/_utils/authActions";
+import { signup } from "@/app/_utils/authActions";
 import Link from "next/link";
 import { useActionState } from "react";
 
-export default function Login() {
-  const [state, action, pending] = useActionState(login, undefined);
+export default function Signup() {
+  const [state, action, pending] = useActionState(signup, undefined);
 
   return (
     <div className="flex flex-col items-center min-h-screen w-full bg-black text-white gap-y-8 pt-28">
-      <h1 className="text-4xl font-thin tracking-widest mb-10">LOGIN</h1>
+      <h1 className="text-4xl font-thin tracking-widest mb-10">SIGN UP</h1>
       <form action={action} className="flex flex-col gap-6 w-80">
+        <input
+          name="name"
+          type="text"
+          placeholder="Name"
+          className="bg-transparent border-b border-white/50 py-2 px-4 focus:outline-none focus:border-white transition-colors placeholder:text-neutral-500"
+        />
         <input
           name="email"
           type="email"
@@ -27,11 +33,11 @@ export default function Login() {
           disabled={pending}
           className="mt-4 border border-white/30 py-2 px-6 hover:bg-white hover:text-black transition-all duration-300 disabled:opacity-50"
         >
-          {pending ? "Logging in..." : "Login"}
+          {pending ? "Signing up..." : "Sign Up"}
         </button>
       </form>
-      <Link href="/signup" className="text-sm text-neutral-400 hover:text-white transition-colors">
-        Don&apos;t have an account? Sign up
+      <Link href="/login" className="text-sm text-neutral-400 hover:text-white transition-colors">
+        Already have an account? Login
       </Link>
       <Link href="/" className="text-sm text-neutral-400 hover:text-white transition-colors">
         Back to Home

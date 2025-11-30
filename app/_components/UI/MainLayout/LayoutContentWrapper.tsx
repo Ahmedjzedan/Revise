@@ -1,18 +1,15 @@
-"use client"; // <-- This wrapper needs client-side features
+"use client";
 
-import { usePathname } from "next/navigation"; // Import usePathname here
-import path from "path";
+import { usePathname } from "next/navigation";
+import React from "react";
 
-// This component wraps the main content and applies classes based on pathname
 function LayoutContentWrapper({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname(); // Use usePathname here
+  const pathname = usePathname();
 
   return (
     <main
       className={
-        pathname === "/"
-          ? ""
-          : pathname === "/TEST"
+        pathname === "/TEST"
           ? ""
           : pathname === "/login"
           ? ""
@@ -25,4 +22,5 @@ function LayoutContentWrapper({ children }: { children: React.ReactNode }) {
     </main>
   );
 }
+
 export default LayoutContentWrapper;

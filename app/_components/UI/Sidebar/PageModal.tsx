@@ -3,41 +3,40 @@
 import React, { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { validateUser } from "@/app/_utils/dbAuthHelpers"; // Adjust path as needed!
+import { addPage } from "@/app/_utils/dbHelpers";
 
-const Login: React.FC = () => {
+interface CreatePageModalProps {
+  userId: string;
+  pageTitle?: string;
+  onClose: () => void;
+}
+
+const PageModal: React.FC<CreatePageModalProps> = ({ userId, pageTitle: _pageTitle, onClose: _onClose }) => {
   const router = useRouter();
-
-  const [name, setName] = useState("");
-  const [password, setPassword] = useState("");
+  const [pageName, setPageName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
+  const handleCreatePage = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError(null);
-
-    if (!name || !password) {
-      setError("Please enter both username and password.");
+    if (!pageName) {
+      setError("Page name cannot be empty.");
       return;
     }
-
     setIsLoading(true);
+    setError(null);
 
     try {
-      const user = await validateUser({ name, password });
-
-      if (user) {
-        // Login successful!
-        // MODIFIED: Redirect to the dynamic user ID page.
-        window.location.href = `/${user.id}`;
-        localStorage.setItem("lastUserId", user.id);
-        localStorage.setItem("lastUserName", user.name);
-      } else {
-        setError("Invalid username or password.");
-      }
+      await addPage(userId, { title: pageName });
+      router.refresh();
+      setTimeout(() => {
+        // Close modal logic if needed, or just refresh
+        // router.back(); // If this was a route intercepting modal
+        // But here it seems to be a state-controlled modal
+        _onClose();
+      }, 100);
     } catch (err) {
-      setError("An unexpected error occurred. Please try again.");
+      setError("Failed to create page. It might already exist.");
       console.error(err);
     } finally {
       setIsLoading(false);
@@ -52,13 +51,13 @@ const Login: React.FC = () => {
 
   return (
     <>
-      {/* ... rest of your JSX remains the same ... */}
       <motion.div
         className="fixed inset-0 z-10 bg-black/95"
         variants={fadeInVariants}
         initial="hidden"
         animate="visible"
         exit="exit"
+        onClick={_onClose}
       ></motion.div>
 
       <motion.div
@@ -68,34 +67,24 @@ const Login: React.FC = () => {
         animate="visible"
         exit="exit"
       >
-        Login
+        Create a new page
       </motion.div>
 
       <motion.div
         className="fixed inset-0 m-auto flex h-fit w-1/2 z-50 items-start justify-center
-                   border-3 border-white rounded-lg bg-[#373737]"
+                   border-3 border-white rounded-lg bg-[#373737] p-5"
         variants={fadeInVariants}
         initial="hidden"
         animate="visible"
         exit="exit"
       >
-        <form className="m-10 w-full" onSubmit={handleLogin}>
-          <h1 className="text-lg mb-1">Name</h1>
-          <input
-            className="border-2 mb-7 py-3 px-5 rounded-md bg-[#484848] w-full"
-            type="text"
-            placeholder="Username"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-
-          <h1 className="text-lg mb-1">Password</h1>
+        <form className="m-10 w-full" onSubmit={handleCreatePage}>
           <input
             className="border-2 mb-10 py-3 px-5 rounded-md bg-[#484848] w-full"
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            type="text"
+            placeholder="Page name"
+            value={pageName}
+            onChange={(e) => setPageName(e.target.value)}
           />
 
           {error && (
@@ -105,11 +94,11 @@ const Login: React.FC = () => {
           <div className="flex justify-end space-x-3">
             <button
               type="button"
-              onClick={() => router.back()}
+              onClick={_onClose}
               className="border-2 border-white rounded-sm px-4 py-1 cursor-pointer
                          transition-all duration-150 hover:scale-110 bg-black/15 text-white"
             >
-              Back
+              Cancel
             </button>
             <button
               type="submit"
@@ -118,7 +107,7 @@ const Login: React.FC = () => {
                          disabled:bg-gray-400 disabled:cursor-not-allowed"
               disabled={isLoading}
             >
-              {isLoading ? "Logging in..." : "Login"}
+              {isLoading ? "Creating..." : "Create"}
             </button>
           </div>
         </form>
@@ -127,4 +116,4 @@ const Login: React.FC = () => {
   );
 };
 
-export default Login;
+export default PageModal;

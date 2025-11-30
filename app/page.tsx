@@ -1,17 +1,27 @@
 "use client";
+import React, { useState } from "react";
 import "./globals.css";
-import MainMenuButton from "@/app/_components/UI/MainMenuButton";
+import LocalSideBar from "@/app/_components/UI/Sidebar/LocalSideBar";
+import LocalMainContent from "@/app/_components/UI/MainContent/LocalMainContent";
+import MotionBorder from "@/app/_components/UI/Online/MotionBorder";
 
 export default function Page() {
-  const lastUserId = localStorage.getItem("lastUserId");
+  const [currentPageId, setCurrentPageId] = useState<number | null>(null);
+
   return (
-    <div className="flex flex-col justify-center items-center gap-y-6">
-      <MainMenuButton
-        link={lastUserId ? "/" + lastUserId : "/login"}
-        buttonTitle="Start online"
-      />
-      <MainMenuButton link="/local" buttonTitle="Start local" />
-      <MainMenuButton link="/options" buttonTitle="Options" />
-    </div>
+    <>
+      <div className="h-full col-start-1 col-span-1 flex flex-col overflow-hidden">
+        <LocalSideBar 
+          currentPageId={currentPageId} 
+          onPageSelect={setCurrentPageId} 
+        />
+      </div>
+
+      <MotionBorder />
+
+      <div className="row-start-1 row-span-2 h-full col-start-3 flex flex-col overflow-hidden">
+        <LocalMainContent pageId={currentPageId} />
+      </div>
+    </>
   );
 }

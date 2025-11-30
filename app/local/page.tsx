@@ -1,33 +1,25 @@
-import SideBar from "@/app/components/UI/SideBar";
-import MainContent from "@/app/components/UI/MainContent/MainContent";
-import MotionBorder from "../components/UI/Online/MotionBorder";
+"use client";
+import React, { useState } from "react";
+import LocalSideBar from "@/app/_components/UI/Sidebar/LocalSideBar";
+import LocalMainContent from "@/app/_components/UI/MainContent/LocalMainContent";
+import MotionBorder from "@/app/_components/UI/Online/MotionBorder";
 
-interface PageProps {
-  params: {
-    pageId: string;
-  };
-}
-
-export default async function Page({ params }: PageProps) {
-  const awaitedParamas = await params.pageId;
-  const pageIdString = awaitedParamas;
-
-  const currentPageId = parseInt(pageIdString, 10);
-
-  if (isNaN(currentPageId)) {
-    return <div>Invalid Page ID provided in the URL.</div>;
-  }
+export default function Page() {
+  const [currentPageId, setCurrentPageId] = useState<number | null>(null);
 
   return (
     <>
       <div className="h-full col-start-1 col-span-1">
-        <SideBar />
+        <LocalSideBar 
+          currentPageId={currentPageId} 
+          onPageSelect={setCurrentPageId} 
+        />
       </div>
 
       <MotionBorder />
 
       <div className="row-start-1 row-span-2 h-full col-start-3">
-        <MainContent pageId={currentPageId} />
+        <LocalMainContent pageId={currentPageId} />
       </div>
     </>
   );

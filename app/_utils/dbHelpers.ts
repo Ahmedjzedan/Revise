@@ -1,172 +1,23 @@
 // app/utils/dbHelpers.ts
-"use server"; // This file contains server-side database helper functions
+"use server";
 
-import { db } from "../_db/index"; // ADJUST THIS PATH
-import {
-  users,
-  pages,
-  nodes,
-  groupNodes,
-  User,
-  NewUser,
-  Page,
-  NewPage,
-  Node,
-  NewNode,
-  GroupNode,
-  NewGroupNode,
-} from "../_db/schema"; 
-
-import { eq, and, or, inArray, notInArray, sql } from "drizzle-orm";
-
-type UpdateNodeData = Partial<Omit<Node, "id" | "createdAt">>;
+import { db } from "../_db/index";
+import { pages, nodes, Page, NewPage } from "../_db/schema";
+import { eq, and } from "drizzle-orm";
 
 /**
- * Fetches all top-level nodes (groups and standard) for a page
- * and eagerly loads the children for the group nodes.
- * @param pageId The ID of the page to fetch data for.
- * @returns A promise resolving to a structured object containing top-level standard nodes and groups with their children.
+ * Fetches all pages for a user.
+ * @param userId The ID of the user to fetch pages for.
+ * @returns A promise resolving to an array of pages for the user.
  */
-export async function getPageDataEager(pageTitle: string) {
-  try {
-    // 1. Find the page ID from the provided page title
-    const page = await db.query.pages.findFirst({
-      where: (pages, { eq }) => eq(pages.title, pageTitle),
-      columns: {
-        id: true,
-      },
-    });
-
-    // 2. If no page is found, return an empty structure
-    if (!page) {
-      console.warn(`Page with title "${pageTitle}" not found.`);
-      return {
-        topLevelStandardNodes: [],
-        topLevelGroupsWithChildren: [],
-      };
-    }
-
-    const pageId = page.id;
-
-    // --- The rest of the logic remains the same, using the fetched pageId ---
-
-    // Identify all node IDs that are children in any group on this page
-    const childNodeIdsResult = await db
-      .select({
-        id: groupNodes.childrenNodeId,
-      })
-      .from(groupNodes)
-      .innerJoin(nodes, eq(groupNodes.parentNodeId, nodes.id)) // Join to parent node to filter by page
-      .where(eq(nodes.pageId, pageId));
-
-    const childIds = childNodeIdsResult.map((row) => row.id);
-
-    const nonChildCondition =
-      childIds.length > 0 ? notInArray(nodes.id, childIds) : undefined;
-
-    // Fetch top-level nodes (groups and standard) and eagerly load children for groups
-    const topLevelNodes = await db.query.nodes.findMany({
-      where: (nodes, { eq, and }) =>
-        and(eq(nodes.pageId, pageId), nonChildCondition),
-      with: {
-        parentGroups: {
-          with: {
-            childrenNode: true,
-          },
-        },
-      },
-    });
-
-    // Structure the data into top-level standard nodes and groups with children
-    const structuredData: {
-      topLevelStandardNodes: Node[];
-      topLevelGroupsWithChildren: Array<Node & { children: Node[] }>;
-    } = {
-      topLevelStandardNodes: [],
-      topLevelGroupsWithChildren: [],
-    };
-
-    for (const node of topLevelNodes) {
-      if (node.group) {
-        const children = Array.isArray(node.parentGroups)
-          ? (node.parentGroups
-              .map((rel) => rel.childrenNode)
-              .filter(
-                (child) => child !== null && child !== undefined,
-              ) as Node[])
-          : [];
-
-        structuredData.topLevelGroupsWithChildren.push({
-          ...node,
-          children: children,
-        });
-      } else {
-        structuredData.topLevelStandardNodes.push(node);
-      }
-    }
-
-    return structuredData;
-  } catch (error) {
-    // Updated error log to be more specific
-    console.error(
-      `Error in getPageDataEager for page titled "${pageTitle}":`,
-      error,
-    );
-    throw error;
-  }
-}
-export async function getNonChildNodes(pageId: number): Promise<Node[]> {
-  try {
-    // Selecting all the children node IDs for the given page ID
-    const childNodeIdsResult = await db
-      .select({
-        id: groupNodes.childrenNodeId,
-      })
-      .from(groupNodes)
-      .innerJoin(nodes, eq(groupNodes.parentNodeId, nodes.id))
-      .where(eq(nodes.pageId, pageId));
-
-    const childIds = childNodeIdsResult.map((row) => row.id);
-
-    const nonChildCondition =
-      childIds.length > 0 ? notInArray(nodes.id, childIds) : undefined;
-
-    const initialNodes: Node[] = await db.query.nodes.findMany({
-      where: (nodes, { eq, and }) =>
-        and(eq(nodes.pageId, pageId), nonChildCondition),
-    });
-    return initialNodes;
-  } catch (error) {
-    console.error(`Error fetching non-child nodes for page ${pageId}:`, error);
-    throw error;
-  }
-}
-
-export async function getChildrenForGroup(groupId: number): Promise<Node[]> {
-  try {
-    // Query the groupNodes table to find all relationships where this node is the parent.
-    const groupRelationships = await db.query.groupNodes.findMany({
-      where: (groupNodes, { eq }) => eq(groupNodes.parentNodeId, groupId),
-      with: {
-        childrenNode: true,
-      },
-    });
-
-    const childNodes = groupRelationships.map(
-      (relationship) => relationship.childrenNode,
-    );
-    return childNodes;
-  } catch (error) {
-    console.error(`Error fetching children for group ID ${groupId}:`, error);
-    throw error;
-  }
-}
-
-// UPDATED: userId type changed from String to string
 export async function getPagesForUser(userId: string): Promise<Page[]> {
   try {
-    const userPages: Page[] = await db.query.pages.findMany({
-      where: (pages, { eq }) => eq(pages.userId, userId),
+    const numericUserId = parseInt(userId, 10);
+    if (isNaN(numericUserId)) {
+        return [];
+    }
+    const userPages = await db.query.pages.findMany({
+      where: (pages, { eq }) => eq(pages.userId, numericUserId),
     });
     return userPages;
   } catch (error) {
@@ -174,49 +25,170 @@ export async function getPagesForUser(userId: string): Promise<Page[]> {
     throw error;
   }
 }
+
+/**
+ * Deletes a node by its ID.
+ * @param nodeId The ID of the node to delete.
+ */
 export async function deleteNode(nodeId: number): Promise<void> {
   await db.delete(nodes).where(eq(nodes.id, nodeId));
 }
 
+/**
+ * Deletes a page by its ID.
+ * @param pageId The ID of the page to delete.
+ */
 export async function deletePage(pageId: number): Promise<void> {
   await db.delete(pages).where(eq(pages.id, pageId));
 }
 
-// UPDATED: userId type changed from number to string
+/**
+ * Adds a new page for a user.
+ * @param userId The ID of the user creating the page.
+ * @param pageData The data for the new page.
+ * @returns The ID of the newly created page.
+ */
 export async function addPage(
   userId: string,
-  pageData: Omit<NewPage, "userId" | "createdAt" | "id">,
+  pageData: Omit<NewPage, "userId" | "createdAt" | "id">
 ): Promise<number | bigint | undefined> {
+  const numericUserId = parseInt(userId, 10);
+  if (isNaN(numericUserId)) {
+      throw new Error("Invalid user ID");
+  }
   const result = await db.insert(pages).values({
     ...pageData,
-    userId: userId,
+    userId: numericUserId,
   });
   return result.lastInsertRowid;
 }
 
-export async function addNode(
-  pageId: number,
-  nodeData: Omit<NewNode, "pageId" | "createdAt" | "id">,
-): Promise<number | bigint | undefined> {
-  const result = await db.insert(nodes).values({
-    ...nodeData,
-    pageId: pageId,
-  });
-  return result.lastInsertRowid;
-}
-
-export async function updateNode(
-  nodeId: number,
-  data: UpdateNodeData,
-): Promise<void> {
+/**
+ * Checks if a page exists for a given user by page title.
+ * @param pageTitle The title of the page to check.
+ * @param userId The ID of the user.
+ * @returns True if the page exists, false otherwise.
+ */
+export async function checkPageExists(
+  pageTitle: string,
+  userId: string
+): Promise<boolean> {
   try {
-    await db
-      .update(nodes)
-      .set(data) // Set the fields to update using the provided data object
-      .where(eq(nodes.id, nodeId)); // Filter by the node ID
+    const numericUserId = parseInt(userId, 10);
+    if (isNaN(numericUserId)) {
+        return false;
+    }
+    const page = await db.query.pages.findFirst({
+      where: and(eq(pages.title, pageTitle), eq(pages.userId, numericUserId)),
+      columns: {
+        id: true,
+      },
+    });
+    return !!page;
   } catch (error) {
-    console.error(`Error updating node ID ${nodeId}:`, error);
-    // Re-throw the error for handling in the calling code (e.g., Server Action)
+    console.error(
+      `Error checking if page "${pageTitle}" exists for user ${userId}:`,
+      error
+    );
+    throw error;
+  }
+}
+
+/**
+ * Gets a page ID by title and user ID.
+ * @param pageTitle The title of the page.
+ * @param userId The ID of the user.
+ * @returns The page ID or null if not found.
+ */
+export async function getPageId(
+  pageTitle: string,
+  userId: string
+): Promise<number | null> {
+  try {
+    const numericUserId = parseInt(userId, 10);
+    if (isNaN(numericUserId)) {
+        return null;
+    }
+    const page = await db.query.pages.findFirst({
+      where: and(eq(pages.title, pageTitle), eq(pages.userId, numericUserId)),
+      columns: {
+        id: true,
+      },
+    });
+    return page ? page.id : null;
+  } catch (error) {
+    console.error(
+      `Error getting page ID for "${pageTitle}" and user ${userId}:`,
+      error
+    );
+    return null;
+  }
+}
+
+/**
+ * Fetches all nodes for a given page.
+ * @param pageId The ID of the page to fetch nodes for.
+ * @returns An array of nodes for the page or null if error occurs.
+ */
+export async function getNodes(pageId: number | string) {
+  try {
+    // Convert pageId to number and validate
+    const numericPageId = Number(pageId);
+    if (isNaN(numericPageId)) {
+      console.log("Invalid page ID provided:", pageId);
+      throw new Error("Invalid page ID provided: ");
+    }
+
+    const pageNodes = await db
+      .select()
+      .from(nodes)
+      .where(eq(nodes.pageId, numericPageId));
+
+    return pageNodes;
+  } catch (error) {
+    console.error("Error fetching nodes:", error);
+    return null;
+  }
+}
+
+/**
+ * Adds a new node to a page.
+ * @param pageId The ID of the page to add the node to.
+ * @param nodeData The data for the new node.
+ * @returns The newly created node.
+ */
+export async function addNode(pageId: number, nodeData: { title: string }) {
+  try {
+    const result = await db
+      .insert(nodes)
+      .values({
+        title: nodeData.title,
+        pageId: pageId,
+      })
+      .returning();
+    return result[0];
+  } catch (error) {
+    console.error("Error adding node:", error);
+    throw error;
+  }
+}
+
+/**
+ * Updates the fullness of a node.
+ * @param nodeId The ID of the node to update.
+ * @param newFullness The new fullness value.
+ * @returns The updated node.
+ */
+export async function updateNodeFullness(nodeId: number, newFullness: number) {
+  try {
+    const result = await db
+      .update(nodes)
+      .set({ fullness: newFullness })
+      .where(eq(nodes.id, nodeId))
+      .returning();
+    return result[0];
+  } catch (error) {
+    console.error("Error updating node fullness:", error);
     throw error;
   }
 }

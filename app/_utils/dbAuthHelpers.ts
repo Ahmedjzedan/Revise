@@ -13,78 +13,28 @@ import { randomUUID } from "crypto"; // Built-in Node.js module for UUIDs
  * @param credentials An object containing the user's name and plaintext password.
  * @returns The newly created user object on success, or an object with an error message on failure.
  */
-export async function createUser(
-  credentials: Pick<NewUser, "name"> & { password: string }
-): Promise<User | { error: string }> {
+export async function getUserNameById(userId: string): Promise<string | null> {
   try {
-    // 1. Check if user already exists
-    const existingUser = await db.query.users.findFirst({
-      where: eq(users.name, credentials.name),
-    });
+    const id = Number(userId);
+    if (isNaN(id)) return null;
 
-    if (existingUser) {
-      return { error: "Username is already taken." };
+    const result = await db
+      .select({
+        name: users.name,
+      })
+      .from(users)
+      .where(eq(users.id, id));
+
+    // If a user was found, the result array will have one item
+    if (result.length > 0) {
+      return result[0].name;
     }
 
-    // 2. Hash the password
-    // The second argument is the "salt rounds", 10 is a good default
-    const hashedPassword = await bcrypt.hash(credentials.password, 10);
-
-    // 3. Generate a UUID for the user ID, as per your schema
-    const userId = randomUUID();
-
-    const newUser: NewUser = {
-      id: userId,
-      name: credentials.name,
-      password: hashedPassword,
-      // createdAt is handled by the database default
-    };
-
-    // 4. Insert the new user and return the created record
-    const result = await db.insert(users).values(newUser).returning();
-
-    if (result.length === 0) {
-      return { error: "Failed to create user." };
-    }
-
-    // Drizzle's .returning() gives an array, we want the first element
-    return result[0];
+    // If no user was found, return null
+    return null;
   } catch (error) {
-    console.error("Error in createUser:", error);
-    return { error: "An unexpected error occurred." };
-  }
-}
-
-/**
- * Validates a user's credentials against the database.
- * @param credentials An object containing the user's name and plaintext password.
- * @returns The full user object if validation is successful, otherwise null.
- */
-export async function validateUser(
-  credentials: Pick<NewUser, "name"> & { password: string }
-): Promise<User | null> {
-  try {
-    // 1. Find the user by their name
-    const user = await db.query.users.findFirst({
-      where: eq(users.name, credentials.name),
-    });
-
-    // 2. If no user is found, validation fails
-    if (!user) {
-      return null;
-    }
-
-    // 3. Securely compare the provided password with the stored hash
-    const isPasswordValid = await bcrypt.compare(
-      credentials.password,
-      user.password
-    );
-
-    // 4. If passwords match, return the user object. Otherwise, return null.
-    return isPasswordValid ? user : null;
-  } catch (error) {
-    console.error("Error in validateUser:", error);
-    // In case of a database error, we should not leak details
+    console.error(`Error fetching user name for ID ${userId}:`, error);
+    // In case of a database error, it's safer to return null
     return null;
   }
 }
