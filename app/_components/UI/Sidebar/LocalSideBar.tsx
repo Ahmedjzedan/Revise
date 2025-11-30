@@ -5,6 +5,7 @@ import { LocalDataManager, LocalPage } from "@/app/_utils/LocalDataManager";
 import Link from "next/link";
 import { Reorder } from "framer-motion";
 import DraggableSideBarItem from "./DraggableSideBarItem";
+import UnifiedSideBar from "./UnifiedSideBar";
 
 interface LocalSideBarProps {
   currentPageId: number | null;
@@ -49,23 +50,14 @@ const LocalSideBar: React.FC<LocalSideBarProps> = ({ currentPageId, onPageSelect
 
   return (
     <>
-      <div className="flex h-full flex-col w-full">
-        <div className="flex flex-col overflow-y-auto overflow-x-hidden">
-          <Reorder.Group axis="y" values={pages} onReorder={handleReorder}>
-            {pages.map((page) => (
-              <DraggableSideBarItem
-                key={page.id}
-                page={page}
-                isActive={currentPageId === page.id}
-                onSelect={onPageSelect}
-                onUpdate={fetchPages}
-                isLocal={true}
-                userId="local"
-              />
-            ))}
-          </Reorder.Group>
-          
-           <button
+      <UnifiedSideBar
+        footer={
+          <Link href="/login" className="text-neutral-500 hover:text-white transition-colors">
+            Sign In / Login
+          </Link>
+        }
+        addButton={
+          <button
             onClick={handleAddPage}
             className="relative flex h-15 cursor-pointer justify-center items-center w-full text-3xl p-3 transition-all duration-500 text-neutral-400 hover:text-white active:bg-neutral-800 bg-[#232323]"
           >
@@ -73,12 +65,22 @@ const LocalSideBar: React.FC<LocalSideBarProps> = ({ currentPageId, onPageSelect
               +
             </span>
           </button>
-        </div>
-        
-        <div className="flex justify-center align-middle m-5 text-lg shrink-0">
-           <Link href="/login" className="text-neutral-500 hover:text-white transition-colors">Sign In / Login</Link>
-        </div>
-      </div>
+        }
+      >
+        <Reorder.Group axis="y" values={pages} onReorder={handleReorder}>
+          {pages.map((page) => (
+            <DraggableSideBarItem
+              key={page.id}
+              page={page}
+              isActive={currentPageId === page.id}
+              onSelect={onPageSelect}
+              onUpdate={fetchPages}
+              isLocal={true}
+              userId="local"
+            />
+          ))}
+        </Reorder.Group>
+      </UnifiedSideBar>
 
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">

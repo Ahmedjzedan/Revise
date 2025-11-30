@@ -56,6 +56,12 @@ export async function addPage(
   if (isNaN(numericUserId)) {
       throw new Error("Invalid user ID");
   }
+
+  const exists = await checkPageExists(pageData.title, userId);
+  if (exists) {
+    throw new Error("Page with this title already exists");
+  }
+
   const result = await db.insert(pages).values({
     ...pageData,
     userId: numericUserId,

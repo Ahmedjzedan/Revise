@@ -39,6 +39,8 @@ export const nodes = sqliteTable("nodes", {
   position: integer("position").default(0),
   type: text("type").default("bar"),
   content: text("content"),
+  completed: integer("completed", { mode: "boolean" }).default(false),
+  completedAt: integer("completed_at", { mode: "timestamp" }),
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
   updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });

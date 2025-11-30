@@ -41,7 +41,9 @@ const LocalMainContent: React.FC<LocalMainContentProps> = ({ pageId }) => {
 
   if (pageId === null) {
     return (
-      <MainContentInfo userName="Guest" isInPage={false} />
+      <React.Suspense fallback={<div>Loading...</div>}>
+        <MainContentInfo userName="Guest" isInPage={false} />
+      </React.Suspense>
     );
   }
 

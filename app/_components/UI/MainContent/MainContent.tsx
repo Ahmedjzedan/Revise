@@ -9,6 +9,8 @@ import { motion } from "framer-motion";
 import { Reorder } from "framer-motion";
 import DraggableMainContentItem from "./DraggableMainContentItem";
 import { reorderNodesAction } from "@/app/_utils/elementActions";
+import { useSearchParams } from "next/navigation";
+import CompletedTasksList from "./CompletedTasksList";
 
 interface MainContentProps {
   pageId: string;
@@ -19,11 +21,11 @@ const MainContent: React.FC<MainContentProps> = ({ pageId }) => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingNode, setEditingNode] = useState<Node | null>(null);
 
+  const searchParams = useSearchParams();
+  const isCompletedView = searchParams.get("view") === "completed";
+
   const fetchNodes = async () => {
     const fetchedNodes = await getNodes(Number(pageId));
-    // Sort by position (descending or ascending? usually list is top to bottom, so asc position)
-    // But if we want newest at bottom, or custom order.
-    // Let's sort by position if available, else id.
     const sortedNodes = (fetchedNodes || []).sort((a, b) => {
       if (a.position !== null && b.position !== null) {
         return a.position - b.position;
@@ -47,7 +49,6 @@ const MainContent: React.FC<MainContentProps> = ({ pageId }) => {
 
   const handleReorder = (newOrder: Node[]) => {
     setNodes(newOrder);
-    // Call server action
     const updates = newOrder.map((node, index) => ({
       id: node.id,
       position: index,
@@ -55,24 +56,41 @@ const MainContent: React.FC<MainContentProps> = ({ pageId }) => {
     reorderNodesAction(updates);
   };
 
+  const handleNodeCompletion = (nodeId: string) => {
+    setNodes((prevNodes) => prevNodes.filter((node) => node.id !== Number(nodeId)));
+  };
+
+  if (isCompletedView) {
+      return <CompletedTasksList pageId={pageId} />;
+  }
+
+  // Filter out completed nodes for active view
+  const activeNodes = nodes.filter(n => !n.completed);
+
   return (
     <div className="flex-1 overflow-y-auto overflow-x-hidden relative pb-20">
-      <div className="flex flex-col gap-5 pt-5">
-        <Reorder.Group axis="y" values={nodes.filter(n => !n.parentId)} onReorder={handleReorder}>
-          {nodes.filter(n => !n.parentId).map((node) => (
+      <div className="flex justify-between items-center px-12 pt-5 mb-2">
+        <h2 className="text-xl text-neutral-400 font-light">Tasks: {activeNodes.length}</h2>
+      </div>
+
+      <div className="flex flex-col gap-5 pt-2">
+        <Reorder.Group axis="y" values={activeNodes.filter(n => !n.parentId)} onReorder={handleReorder}>
+          {activeNodes.filter(n => !n.parentId).map((node) => (
             <div key={node.id}>
               <DraggableMainContentItem
                 node={node}
                 onUpdate={handleNodeUpdate}
                 onEdit={(n) => setEditingNode(n as unknown as Node)}
+                onComplete={handleNodeCompletion}
               />
               {/* Render children */}
-              {nodes.filter(child => child.parentId === node.id).map(child => (
+              {activeNodes.filter(child => child.parentId === node.id).map(child => (
                 <div key={child.id} className="ml-10">
                    <DraggableMainContentItem
                     node={child}
                     onUpdate={handleNodeUpdate}
                     onEdit={(n) => setEditingNode(n as unknown as Node)}
+                    onComplete={handleNodeCompletion}
                   />
                 </div>
               ))}
@@ -85,13 +103,13 @@ const MainContent: React.FC<MainContentProps> = ({ pageId }) => {
         <button
           onClick={() => setIsCreateModalOpen(true)}
           className={`group relative flex items-center justify-center rounded-full bg-[#232323] hover:bg-white transition-all duration-300 shadow-lg
-            ${nodes.length === 0 ? "w-full h-20 rounded-2xl" : "w-16 h-16"}
+            ${activeNodes.length === 0 ? "w-full h-20 rounded-2xl" : "w-16 h-16"}
           `}
         >
           <span className={`text-3xl text-neutral-400 group-hover:text-black transition-colors duration-300 pb-1
-             ${nodes.length === 0 ? "text-xl font-light tracking-widest" : ""}
+             ${activeNodes.length === 0 ? "text-xl font-light tracking-widest" : ""}
           `}>
-            {nodes.length === 0 ? "+ Add First Element" : "+"}
+            {activeNodes.length === 0 ? "+ Add First Element" : "+"}
           </span>
         </button>
       </div>

@@ -90,11 +90,12 @@ export async function moveNodeAction(nodeId: number, direction: "up" | "down", p
   }
 }
 
-export async function updateNodeFullnessAction(nodeId: number, fullness: number) {
+export async function updateNodeFullnessAction(nodeId: number, newFullness: number) {
   try {
     await db.update(nodes)
-      .set({ fullness })
+      .set({ fullness: newFullness })
       .where(eq(nodes.id, nodeId));
+    revalidatePath("/[user]/[pageTitle]");
     return { success: true };
   } catch (error) {
     console.error("Error updating node fullness:", error);
@@ -115,5 +116,21 @@ export async function reorderNodesAction(updates: { id: number; position: number
   } catch (error) {
     console.error("Error reordering nodes:", error);
     throw new Error("Failed to reorder nodes");
+  }
+}
+
+export async function toggleNodeCompletion(nodeId: number, completed: boolean) {
+  try {
+    await db.update(nodes)
+      .set({ 
+        completed, 
+        completedAt: completed ? new Date() : null 
+      })
+      .where(eq(nodes.id, nodeId));
+    revalidatePath("/[user]/[pageTitle]");
+    return { success: true };
+  } catch (error) {
+    console.error("Error toggling node completion:", error);
+    return { error: "Failed to toggle completion" };
   }
 }

@@ -5,6 +5,7 @@ import MainContentInfo from "@/app/_components/UI/MainContent/MainContentInfo";
 import { getUserNameById } from "@/app/_utils/dbAuthHelpers";
 import { checkPageExists, getPageId } from "@/app/_utils/dbHelpers";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 
 interface PageProps {
   params: Promise<{
@@ -26,18 +27,22 @@ export default async function Page({ params }: PageProps) {
 
   return (
     <>
-      <div className="h-full col-start-1 col-span-1 flex flex-col overflow-hidden">
+      <div className="col-start-1 row-start-1 h-full w-full z-0 flex flex-col overflow-hidden">
         <SideBar userId={user} currentPageTitle={pageTitle} />
       </div>
 
       <MotionBorder />
 
       <div className="row-start-1 row-span-2 h-full col-start-3 flex flex-col overflow-hidden">
-        <MainContentInfo
-          pageName={pageTitle}
-          userName={userName || undefined}
-        ></MainContentInfo>
-        {pageId && <MainContent pageId={pageId.toString()} />}
+        <Suspense fallback={<div>Loading info...</div>}>
+          <MainContentInfo
+            pageName={pageTitle}
+            userName={userName || undefined}
+          ></MainContentInfo>
+        </Suspense>
+        <Suspense fallback={<div>Loading content...</div>}>
+          {pageId && <MainContent pageId={pageId.toString()} />}
+        </Suspense>
       </div>
     </>
   );

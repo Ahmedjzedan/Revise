@@ -5,6 +5,7 @@ import DraggableSideBarItem from "./DraggableSideBarItem";
 import AddPageButton from "./AddPageButton";
 import { Page } from "@/app/_db/schema";
 import { reorderPagesAction } from "@/app/_utils/pageActions";
+import UnifiedSideBar from "./UnifiedSideBar";
 
 // Adapt Page type to match LocalPage interface expected by DraggableSideBarItem
 // Actually DraggableSideBarItem expects LocalPage which has { id: number, title: string, ... }
@@ -21,9 +22,10 @@ interface SideBarListProps {
   initialPages: Page[];
   userId: number;
   currentPageTitle?: string;
+  footer?: React.ReactNode;
 }
 
-const SideBarList: React.FC<SideBarListProps> = ({ initialPages, userId, currentPageTitle }) => {
+const SideBarList: React.FC<SideBarListProps> = ({ initialPages, userId, currentPageTitle, footer }) => {
   // Sort by position initially
   const sortedPages = [...initialPages].sort((a, b) => (a.position || 0) - (b.position || 0));
   const [pages, setPages] = useState(sortedPages);
@@ -50,9 +52,11 @@ const SideBarList: React.FC<SideBarListProps> = ({ initialPages, userId, current
   // I should update DraggableSideBarItem to use a shared interface or just { id, title }.
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-y-auto overflow-x-hidden">
-        <Reorder.Group axis="y" values={pages} onReorder={handleReorder}>
+    <UnifiedSideBar
+      footer={footer}
+      addButton={<AddPageButton />}
+    >
+      <Reorder.Group axis="y" values={pages} onReorder={handleReorder}>
           {pages.map((page) => (
             <DraggableSideBarItem
               key={page.id}
@@ -65,9 +69,7 @@ const SideBarList: React.FC<SideBarListProps> = ({ initialPages, userId, current
             />
           ))}
         </Reorder.Group>
-        <AddPageButton />
-      </div>
-    </div>
+    </UnifiedSideBar>
   );
 };
 

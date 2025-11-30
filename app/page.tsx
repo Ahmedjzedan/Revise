@@ -10,7 +10,7 @@ export default function Page() {
 
   return (
     <>
-      <div className="h-full col-start-1 col-span-1 flex flex-col overflow-hidden">
+      <div className="col-start-1 row-start-1 h-full w-full z-0">
         <LocalSideBar 
           currentPageId={currentPageId} 
           onPageSelect={setCurrentPageId} 

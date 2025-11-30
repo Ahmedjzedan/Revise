@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { updateNodeFullnessAction } from "@/app/_utils/elementActions";
+import { updateNodeFullnessAction, toggleNodeCompletion } from "@/app/_utils/elementActions";
+import confetti from "canvas-confetti";
 
 import { DragControls } from "framer-motion";
 
@@ -15,6 +16,7 @@ interface SideBarElementProps {
   title?: string;
   onUpdate: (id: string, newFill: number) => void;
   onEdit: () => void;
+  onComplete?: (id: string) => void;
   dragControls?: DragControls;
 }
 
@@ -30,38 +32,73 @@ const MainContentElement: React.FC<
   id,
   onUpdate,
   onEdit,
+  onComplete,
   dragControls,
 }) => {
   const [maxFill] = useState(maxFillProp);
   const [fill, setFill] = useState(fillProp > maxFill ? maxFill : fillProp);
+  const [isCompleted, setIsCompleted] = useState(false);
+  const [showTimer, setShowTimer] = useState(false);
 
   useEffect(() => {
     setFill(fillProp > maxFill ? maxFill : fillProp);
   }, [fillProp, maxFill]);
 
+  const handleCompletion = async () => {
+    setIsCompleted(true);
+    setShowTimer(true);
+    
+    // Trigger confetti
+    const rect = document.getElementById(`node-${id}`)?.getBoundingClientRect();
+    if (rect) {
+      const x = (rect.left + rect.width / 2) / window.innerWidth;
+      const y = (rect.top + rect.height / 2) / window.innerHeight;
+      confetti({
+        origin: { x, y },
+        particleCount: 100,
+        spread: 70,
+        colors: ['#26ccff', '#a25afd', '#ff5e7e', '#88ff5a', '#fcff42', '#ffa62d', '#ff36ff'],
+      });
+    }
+
+    // Wait 3 seconds then mark as completed
+    setTimeout(async () => {
+      await toggleNodeCompletion(Number(id), true);
+      if (onComplete) {
+        onComplete(id);
+      }
+    }, 3000);
+  };
+
   const widthFill = (fill / maxFill) * 100;
+
   return (
-    <div className="relative group/item ml-10 mr-28 mt-5">
+    <div id={`node-${id}`} className="relative group/item ml-10 mr-28 mt-5">
       <button
         className={
           `group relative flex items-center justify-between h-20 rounded-xl hover:bg-neutral-400
                     w-full text-2xl px-10 cursor-pointer bg-[#2C2C2C] z-0 transition-all duration-500 hover:scale-101
-                    overflow-hidden shadow-[inset_0_0_0_2px_white]  ` +
+                    overflow-hidden shadow-[inset_0_0_0_2px_white] ` +
           (isChild ? "mb-2 last:mb-0" : "")
         }
         onClick={() => {
           if (fill < maxFill) {
-            setFill(fill + 1);
-            updateNodeFullnessAction(Number(id), fill + 1);
+            const newFill = fill + 1;
+            setFill(newFill);
+            updateNodeFullnessAction(Number(id), newFill);
             if (isChild) {
-              onUpdate(id, fill + 1);
+              onUpdate(id, newFill);
+            }
+            if (newFill === maxFill) {
+              handleCompletion();
             }
           }
         }}
       >
         <motion.div
           className={
-            `absolute inset-0 group-hover:bg-neutral-400 bg-black z-1 ` +
+            `absolute inset-0 z-1 ` +
+            (isCompleted ? "bg-green-500" : "group-hover:bg-neutral-400 bg-black") + " " +
             (fill === maxFill ? "rounded-xl" : "rounded-l-xl rounded-r-[0px]")
           }
           initial={{ width: 0 }}
@@ -70,7 +107,8 @@ const MainContentElement: React.FC<
         ></motion.div>
         <motion.div
           className={
-            `absolute inset-0 backdrop-invert-100 z-10 ` +
+            `absolute inset-0 z-10 ` +
+            (isCompleted ? "" : "backdrop-invert-100") + " " +
             (fill === maxFill
               ? "rounded-l-[12px] rounded-r-[12px]"
               : "rounded-l-[12px] rounded-r-[0px]")
@@ -79,9 +117,21 @@ const MainContentElement: React.FC<
           animate={{ width: `${widthFill}%` }}
           transition={{ duration: 0.5, ease: "linear" }}
         ></motion.div>
-        <span className="z-2 transition-colors duration-300 text-white group-hover:text-black">
-          {title}
-        </span>
+        <div className="z-2 flex flex-col items-start">
+          <span className="transition-colors duration-300 text-white group-hover:text-black">
+            {title}
+          </span>
+          {showTimer && (
+            <div className="w-full h-1 bg-white/30 rounded-full mt-1 overflow-hidden">
+               <motion.div 
+                 className="h-full bg-white"
+                 initial={{ width: "100%" }}
+                 animate={{ width: "0%" }}
+                 transition={{ duration: 3, ease: "linear" }}
+               />
+            </div>
+          )}
+        </div>
 
         <span
           className="text-md px-4 py-2 flex items-center justify-center rounded-md bg-white text-neutral-900 z-2

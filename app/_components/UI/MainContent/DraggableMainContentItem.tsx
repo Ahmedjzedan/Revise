@@ -16,12 +16,14 @@ interface DraggableMainContentItemProps {
   node: NodeItem;
   onUpdate: (nodeId: string, newFill: number) => void;
   onEdit: (node: NodeItem) => void;
+  onComplete: (nodeId: string) => void;
 }
 
 const DraggableMainContentItem: React.FC<DraggableMainContentItemProps> = ({
   node,
   onUpdate,
   onEdit,
+  onComplete,
 }) => {
   const controls = useDragControls();
 
@@ -39,6 +41,7 @@ const DraggableMainContentItem: React.FC<DraggableMainContentItemProps> = ({
         maxFillProp={node.maxfullness || 5}
         onUpdate={onUpdate}
         onEdit={() => onEdit(node)}
+        onComplete={onComplete}
         dragControls={controls}
       />
     </Reorder.Item>

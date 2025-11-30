@@ -20,7 +20,7 @@ export default async function Page({ params }: PageProps) {
 
   return (
     <>
-      <div className="h-full col-start-1 col-span-1 flex flex-col overflow-hidden">
+      <div className="col-start-1 row-start-1 h-full w-full z-0 flex flex-col overflow-hidden">
         <SideBar userId={user} />
       </div>
 

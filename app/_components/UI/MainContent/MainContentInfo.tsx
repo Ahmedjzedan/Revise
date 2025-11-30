@@ -1,4 +1,7 @@
+"use client";
 import React from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 interface MainContentInfoProps {
   pageName?: string;
@@ -9,6 +12,9 @@ interface MainContentInfoProps {
 const MainContentInfo: React.FC<MainContentInfoProps> = (
   props
 ) => {
+  const searchParams = useSearchParams();
+  const isCompletedView = searchParams.get("view") === "completed";
+
   return (
     <div
       className={
@@ -28,6 +34,15 @@ const MainContentInfo: React.FC<MainContentInfoProps> = (
           <div className="text-center">
             <p className="mb-0.5 text-xl text-neutral-400">Page</p>
             <p className="text-3xl text-white">{props.pageName}</p>
+          </div>
+
+          <div className="flex gap-4">
+            <Link
+              href={isCompletedView ? "?" : "?view=completed"}
+              className="px-4 py-2 bg-[#232323] text-neutral-400 hover:text-white rounded-lg transition-colors"
+            >
+              {isCompletedView ? "View Active Tasks" : "View Completed Tasks"}
+            </Link>
           </div>
           
           <div className="text-center">

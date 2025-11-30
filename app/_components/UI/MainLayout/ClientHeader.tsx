@@ -32,15 +32,15 @@ export default function ClientHeader() {
     <header
       className={
         pathname === "/login" || pathname === "/signup"
-          ? "absolute top-0 left-0 m-8 flex flex-row items-center gap-4 z-50"
-          : "relative flex flex-col justify-start items-center row-start-1 col-start-1 col-span-1 sticky top-0 z-50 pt-8"
+          ? "absolute top-0 left-0 m-8 flex flex-row items-center gap-4 z-50 pointer-events-none"
+          : "relative flex flex-col justify-start items-center row-start-1 col-start-1 col-span-1 sticky top-0 z-50 mt-4 mb-8 pointer-events-none"
       }
     >
       <motion.div
         className={
           pathname === "/login" || pathname === "/signup"
-            ? "flex flex-row items-center gap-3"
-            : "relative z-10 flex flex-col items-center p-5"
+            ? "flex flex-row items-center gap-3 pointer-events-auto"
+            : "relative z-10 flex flex-col items-center p-2 pointer-events-auto"
         }
         layout
         variants={titleVariants}
@@ -69,7 +69,7 @@ export default function ClientHeader() {
           initial={{ width: 0 }}
           animate={{ width: "70%" }}
           transition={{ duration: 1 }}
-          className="w-2/3 border-1 mb-4"
+          className="w-2/3 border-1"
         ></motion.div>
       )}
     </header>
