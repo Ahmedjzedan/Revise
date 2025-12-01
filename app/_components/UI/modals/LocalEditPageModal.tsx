@@ -1,5 +1,6 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { LocalDataManager } from "@/app/_utils/LocalDataManager";
 import { toast } from "sonner";
 
@@ -37,24 +38,33 @@ const LocalEditPageModal: React.FC<LocalEditPageModalProps> = ({
     });
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80" onClick={onClose}>
-      <div className="bg-[#1a1a1a] border border-white/20 p-8 rounded-lg w-96" onClick={(e) => e.stopPropagation()}>
-        <h3 className="text-xl mb-6 text-white">Edit Page</h3>
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
+  if (!mounted) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80" onClick={onClose}>
+      <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] p-8 rounded-lg w-96" onClick={(e) => e.stopPropagation()}>
+        <h3 className="text-xl mb-6 text-[var(--text-primary)]">Edit Page</h3>
         
         <div className="flex flex-col gap-4">
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full bg-[#333] text-white p-3 rounded border border-transparent focus:border-white outline-none"
+            className="w-full bg-[var(--bg-primary)] text-[var(--text-primary)] p-3 rounded border border-transparent focus:border-[var(--text-primary)] outline-none"
             placeholder="Page Title"
           />
           
           <div className="flex flex-col gap-2 mt-4">
              <button 
                onClick={handleRename}
-               className="w-full py-2 bg-white text-black rounded hover:bg-neutral-200 transition-colors"
+               className="w-full py-2 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded hover:opacity-90 transition-colors"
              >
                Rename
              </button>
@@ -67,7 +77,8 @@ const LocalEditPageModal: React.FC<LocalEditPageModalProps> = ({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

@@ -100,6 +100,8 @@ export async function checkPageExists(
   }
 }
 
+import { unstable_cache } from "next/cache";
+
 /**
  * Gets a page ID by title and user ID.
  * @param pageTitle The title of the page.
@@ -110,25 +112,31 @@ export async function getPageId(
   pageTitle: string,
   userId: string
 ): Promise<number | null> {
-  try {
-    const numericUserId = parseInt(userId, 10);
-    if (isNaN(numericUserId)) {
+  return unstable_cache(
+    async () => {
+      try {
+        const numericUserId = parseInt(userId, 10);
+        if (isNaN(numericUserId)) {
+            return null;
+        }
+        const page = await db.query.pages.findFirst({
+          where: and(eq(pages.title, pageTitle), eq(pages.userId, numericUserId)),
+          columns: {
+            id: true,
+          },
+        });
+        return page ? page.id : null;
+      } catch (error) {
+        console.error(
+          `Error getting page ID for "${pageTitle}" and user ${userId}:`,
+          error
+        );
         return null;
-    }
-    const page = await db.query.pages.findFirst({
-      where: and(eq(pages.title, pageTitle), eq(pages.userId, numericUserId)),
-      columns: {
-        id: true,
-      },
-    });
-    return page ? page.id : null;
-  } catch (error) {
-    console.error(
-      `Error getting page ID for "${pageTitle}" and user ${userId}:`,
-      error
-    );
-    return null;
-  }
+      }
+    },
+    [`page-id-${userId}-${pageTitle}`],
+    { tags: [`page-id-${userId}-${pageTitle}`] }
+  )();
 }
 
 /**
@@ -137,24 +145,30 @@ export async function getPageId(
  * @returns An array of nodes for the page or null if error occurs.
  */
 export async function getNodes(pageId: number | string) {
-  try {
-    // Convert pageId to number and validate
-    const numericPageId = Number(pageId);
-    if (isNaN(numericPageId)) {
-      console.log("Invalid page ID provided:", pageId);
-      throw new Error("Invalid page ID provided: ");
-    }
-
-    const pageNodes = await db
-      .select()
-      .from(nodes)
-      .where(eq(nodes.pageId, numericPageId));
-
-    return pageNodes;
-  } catch (error) {
-    console.error("Error fetching nodes:", error);
+  const numericPageId = Number(pageId);
+  if (isNaN(numericPageId)) {
+    console.log("Invalid page ID provided:", pageId);
+    // throw new Error("Invalid page ID provided: "); // Don't throw inside cache, return null or empty
     return null;
   }
+
+  return unstable_cache(
+    async () => {
+      try {
+        const pageNodes = await db
+          .select()
+          .from(nodes)
+          .where(eq(nodes.pageId, numericPageId));
+
+        return pageNodes;
+      } catch (error) {
+        console.error("Error fetching nodes:", error);
+        return null;
+      }
+    },
+    [`nodes-${numericPageId}`],
+    { tags: [`nodes-${numericPageId}`] }
+  )();
 }
 
 /**

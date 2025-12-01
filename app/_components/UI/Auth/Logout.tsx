@@ -6,7 +6,7 @@ const Logout: React.FC = () => {
     <form action={logout}>
       <button
         type="submit"
-        className="text-neutral-400 hover:text-white transition-colors duration-300"
+        className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors duration-300"
       >
         Log out
       </button>

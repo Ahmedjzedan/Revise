@@ -52,6 +52,11 @@ const LocalMainContent: React.FC<LocalMainContentProps> = ({ pageId }) => {
     LocalDataManager.reorderNodes(newOrder);
   };
 
+  const handleNodeCompletion = (nodeId: string) => {
+    LocalDataManager.deleteNode(Number(nodeId));
+    setNodes((prevNodes) => prevNodes.filter((node) => node.id !== Number(nodeId)));
+  };
+
   return (
     <div className="flex-1 overflow-y-auto overflow-x-hidden relative pb-20">
       <div className="flex flex-col gap-5 pt-5">
@@ -62,6 +67,7 @@ const LocalMainContent: React.FC<LocalMainContentProps> = ({ pageId }) => {
                 node={node}
                 onUpdate={handleNodeUpdate}
                 onEdit={(n) => setEditingNode(n as LocalNode)}
+                onComplete={handleNodeCompletion}
               />
               {/* Render children */}
               {nodes.filter(child => child.parentId === node.id).map(child => (
@@ -70,6 +76,7 @@ const LocalMainContent: React.FC<LocalMainContentProps> = ({ pageId }) => {
                     node={child}
                     onUpdate={handleNodeUpdate}
                     onEdit={(n) => setEditingNode(n as LocalNode)}
+                    onComplete={handleNodeCompletion}
                   />
                 </div>
               ))}
@@ -81,14 +88,14 @@ const LocalMainContent: React.FC<LocalMainContentProps> = ({ pageId }) => {
       <div className="flex justify-center mt-10 mb-10 px-5">
         <button
           onClick={() => setIsCreateModalOpen(true)}
-          className={`group relative flex items-center justify-center rounded-full bg-[#232323] hover:bg-white transition-all duration-300 shadow-lg
-            ${nodes.length === 0 ? "w-full h-20 rounded-2xl" : "w-16 h-16"}
+          className={`group relative flex items-center justify-center rounded-full bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-all duration-300 shadow-lg
+            ${nodes.length === 0 ? "w-64 h-16 rounded-2xl" : "w-16 h-16"}
           `}
         >
-          <span className={`text-3xl text-neutral-400 group-hover:text-black transition-colors duration-300 pb-1
+          <span className={`text-3xl text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors duration-300 pb-1
              ${nodes.length === 0 ? "text-xl font-light tracking-widest" : ""}
           `}>
-            {nodes.length === 0 ? "+ Add First Element" : "+"}
+            {nodes.length === 0 ? "+ Add Element" : "+"}
           </span>
         </button>
       </div>

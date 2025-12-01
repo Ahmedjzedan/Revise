@@ -69,47 +69,47 @@ const EditElementModal: React.FC<EditElementModalProps> = ({
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.9 }}
-        className="bg-[#1a1a1a] border border-white/20 p-8 rounded-2xl w-[600px] max-w-full mx-4 shadow-2xl"
+        className="bg-[var(--bg-secondary)] border border-[var(--border-color)] p-8 rounded-2xl w-[600px] max-w-full mx-4 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="text-2xl font-light mb-6 text-white tracking-wide">Edit Element</h3>
+        <h3 className="text-2xl font-light mb-6 text-[var(--text-primary)] tracking-wide">Edit Element</h3>
         
         <div className="flex flex-col gap-6">
           <div>
-            <label className="block text-neutral-400 text-sm mb-2">Title</label>
+            <label className="block text-[var(--text-secondary)] text-sm mb-2">Title</label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full bg-[#333] text-white p-4 rounded-xl border border-transparent focus:border-white outline-none transition-all text-lg"
+              className="w-full bg-[var(--bg-primary)] text-[var(--text-primary)] p-4 rounded-xl border border-[var(--border-color)] focus:border-[var(--text-primary)] outline-none transition-all text-lg"
               placeholder="Element Title"
             />
           </div>
 
           <div>
-             <label className="block text-neutral-400 text-sm mb-2">Notes</label>
+             <label className="block text-[var(--text-secondary)] text-sm mb-2">Notes</label>
              <textarea
                value={content}
                onChange={(e) => setContent(e.target.value)}
-               className="w-full bg-[#333] text-white p-4 rounded-xl border border-transparent focus:border-white outline-none transition-all min-h-[100px]"
+               className="w-full bg-[var(--bg-primary)] text-[var(--text-primary)] p-4 rounded-xl border border-[var(--border-color)] focus:border-[var(--text-primary)] outline-none transition-all min-h-[100px]"
                placeholder="Add notes..."
              />
           </div>
 
           <div>
-            <label className="block text-neutral-400 text-sm mb-2">Max Fullness</label>
+            <label className="block text-[var(--text-secondary)] text-sm mb-2">Max Fullness</label>
             <input
               type="number"
               min="1"
               max="20"
               value={maxFullness}
               onChange={(e) => setMaxFullness(Number(e.target.value))}
-              className="w-full bg-[#333] text-white p-4 rounded-xl border border-transparent focus:border-white outline-none transition-all text-lg"
+              className="w-full bg-[var(--bg-primary)] text-[var(--text-primary)] p-4 rounded-xl border border-[var(--border-color)] focus:border-[var(--text-primary)] outline-none transition-all text-lg"
             />
           </div>
           
           <div>
-            <label className="block text-neutral-400 text-sm mb-2">Current Fullness</label>
+            <label className="block text-[var(--text-secondary)] text-sm mb-2">Current Fullness</label>
             <div className="flex items-center gap-4">
               <input
                 type="range"
@@ -119,23 +119,23 @@ const EditElementModal: React.FC<EditElementModalProps> = ({
                 onChange={(e) => {
                    setFullness(Number(e.target.value));
                 }}
-                className="w-full h-2 bg-[#333] rounded-lg appearance-none cursor-pointer"
+                className="w-full h-2 bg-[var(--border-color)] rounded-lg appearance-none cursor-pointer accent-[var(--text-primary)]"
               />
-              <span className="text-white w-8">{fullness}</span>
+              <span className="text-[var(--text-primary)] w-8">{fullness}</span>
             </div>
           </div>
 
           <div className="flex flex-col gap-3 mt-4">
              <button 
                onClick={handleUpdate}
-               className="w-full py-3 bg-white text-black rounded-xl hover:bg-neutral-200 transition-colors font-medium"
+               className="w-full py-3 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-xl hover:opacity-90 transition-colors font-medium"
              >
                Save Changes
              </button>
              
              <button
                onClick={() => setIsAddChildOpen(true)}
-               className="w-full py-3 bg-[#333] text-white rounded-xl hover:bg-[#444] transition-colors font-medium"
+               className="w-full py-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] rounded-xl hover:bg-[var(--border-color)] transition-colors font-medium"
              >
                Add Child Element
              </button>
@@ -151,8 +151,8 @@ const EditElementModal: React.FC<EditElementModalProps> = ({
 
         {isAddChildOpen && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80" onClick={() => setIsAddChildOpen(false)}>
-             <div className="bg-[#1a1a1a] border border-white/20 p-8 rounded-lg w-96" onClick={(e) => e.stopPropagation()}>
-                <h3 className="text-xl mb-4 text-white">Add Child Element</h3>
+             <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] p-8 rounded-lg w-96" onClick={(e) => e.stopPropagation()}>
+                <h3 className="text-xl mb-4 text-[var(--text-primary)]">Add Child Element</h3>
                 <form onSubmit={handleAddChild}>
                   <input 
                     autoFocus
@@ -160,11 +160,11 @@ const EditElementModal: React.FC<EditElementModalProps> = ({
                     value={childTitle}
                     onChange={(e) => setChildTitle(e.target.value)}
                     placeholder="Child Title"
-                    className="w-full bg-[#333] text-white p-2 rounded mb-4 border border-transparent focus:border-white outline-none"
+                    className="w-full bg-[var(--bg-primary)] text-[var(--text-primary)] p-2 rounded mb-4 border border-transparent focus:border-[var(--text-primary)] outline-none"
                   />
                   <div className="flex justify-end gap-2">
-                    <button type="button" onClick={() => setIsAddChildOpen(false)} className="px-4 py-2 text-neutral-400 hover:text-white">Cancel</button>
-                    <button type="submit" className="px-4 py-2 bg-white text-black rounded hover:bg-neutral-200">Add</button>
+                    <button type="button" onClick={() => setIsAddChildOpen(false)} className="px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)]">Cancel</button>
+                    <button type="submit" className="px-4 py-2 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded hover:opacity-90">Add</button>
                   </div>
                 </form>
              </div>

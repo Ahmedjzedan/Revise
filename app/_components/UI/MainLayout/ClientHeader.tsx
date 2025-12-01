@@ -7,6 +7,8 @@ import { motion } from "framer-motion";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 
+import ReviseLogo from "../ReviseLogo";
+
 export default function ClientHeader() {
   const pathname = usePathname();
   const [currentPath, setCurrentPath] = useState(pathname);
@@ -47,29 +49,14 @@ export default function ClientHeader() {
         initial="nav"
         animate="nav"
       >
-        <Image 
-          src={OpenBookIcon} 
-          height={pathname === "/login" || pathname === "/signup" ? 40 : 50} 
-          width={pathname === "/login" || pathname === "/signup" ? 40 : 50} 
-          alt="Open book logo" 
-        />
-        <Link 
-          href={"/"} 
-          className={
-            pathname === "/login" || pathname === "/signup"
-              ? "text-4xl text-white font-light tracking-wide"
-              : "text-5xl text-white"
-          }
-        >
-          Revise
-        </Link>
+        <ReviseLogo isAuthPage={pathname === "/login" || pathname === "/signup"} />
       </motion.div>
       {pathname !== "/login" && pathname !== "/signup" && (
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: "70%" }}
           transition={{ duration: 1 }}
-          className="w-2/3 border-1"
+          className="w-2/3 border-b border-[var(--border-color)]"
         ></motion.div>
       )}
     </header>

@@ -76,9 +76,9 @@ const MainContentElement: React.FC<
     <div id={`node-${id}`} className="relative group/item ml-10 mr-28 mt-5">
       <button
         className={
-          `group relative flex items-center justify-between h-20 rounded-xl hover:bg-neutral-400
-                    w-full text-2xl px-10 cursor-pointer bg-[#2C2C2C] z-0 transition-all duration-500 hover:scale-101
-                    overflow-hidden shadow-[inset_0_0_0_2px_white] ` +
+          `group relative flex items-center justify-between h-20 rounded-xl hover:bg-[var(--text-secondary)]
+                    w-full text-2xl px-10 cursor-pointer bg-[var(--bg-secondary)] z-0 transition-all duration-500 hover:scale-101
+                    overflow-hidden shadow-[inset_0_0_0_2px_var(--border-color)] ` +
           (isChild ? "mb-2 last:mb-0" : "")
         }
         onClick={() => {
@@ -98,7 +98,7 @@ const MainContentElement: React.FC<
         <motion.div
           className={
             `absolute inset-0 z-1 ` +
-            (isCompleted ? "bg-green-500" : "group-hover:bg-neutral-400 bg-black") + " " +
+            (isCompleted ? "bg-green-500" : "group-hover:bg-[var(--text-secondary)] bg-[var(--bg-primary)]") + " " +
             (fill === maxFill ? "rounded-xl" : "rounded-l-xl rounded-r-[0px]")
           }
           initial={{ width: 0 }}
@@ -118,7 +118,7 @@ const MainContentElement: React.FC<
           transition={{ duration: 0.5, ease: "linear" }}
         ></motion.div>
         <div className="z-2 flex flex-col items-start">
-          <span className="transition-colors duration-300 text-white group-hover:text-black">
+          <span className="transition-colors duration-300 text-[var(--text-primary)] group-hover:text-[var(--bg-primary)]">
             {title}
           </span>
           {showTimer && (
@@ -134,8 +134,8 @@ const MainContentElement: React.FC<
         </div>
 
         <span
-          className="text-md px-4 py-2 flex items-center justify-center rounded-md bg-white text-neutral-900 z-2
-                   group-hover:bg-black group-hover:text-white group-hover:text- transition-all duration-500"
+          className="text-md px-4 py-2 flex items-center justify-center rounded-md bg-[var(--text-primary)] text-[var(--bg-primary)] z-2
+                   group-hover:bg-[var(--bg-primary)] group-hover:text-[var(--text-primary)] transition-all duration-500"
         >
           {fill} / {maxFill}
         </span>
@@ -146,7 +146,7 @@ const MainContentElement: React.FC<
           e.stopPropagation();
           onEdit();
         }}
-        className="absolute -right-16 top-1/2 -translate-y-1/2 opacity-0 group-hover/item:opacity-100 transition-opacity duration-300 text-neutral-400 hover:text-white p-2 mr-2"
+        className="absolute -right-16 top-1/2 -translate-y-1/2 opacity-0 group-hover/item:opacity-100 transition-opacity duration-300 text-[var(--text-secondary)] hover:text-[var(--text-primary)] p-2 mr-2"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
@@ -154,7 +154,7 @@ const MainContentElement: React.FC<
       </button>
       
       <div 
-        className="absolute -right-24 top-1/2 -translate-y-1/2 opacity-0 group-hover/item:opacity-100 transition-opacity duration-300 text-neutral-400 hover:text-white p-2 cursor-grab active:cursor-grabbing"
+        className="absolute -right-24 top-1/2 -translate-y-1/2 opacity-0 group-hover/item:opacity-100 transition-opacity duration-300 text-[var(--text-secondary)] hover:text-[var(--text-primary)] p-2 cursor-grab active:cursor-grabbing"
         onPointerDown={(e) => dragControls?.start(e)}
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

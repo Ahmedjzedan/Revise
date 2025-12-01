@@ -6,26 +6,20 @@ import AddPageButton from "./AddPageButton";
 import { Page } from "@/app/_db/schema";
 import { reorderPagesAction } from "@/app/_utils/pageActions";
 import UnifiedSideBar from "./UnifiedSideBar";
-
-// Adapt Page type to match LocalPage interface expected by DraggableSideBarItem
-// Actually DraggableSideBarItem expects LocalPage which has { id: number, title: string, ... }
-// The DB Page type has { id: number, title: string, ... } so it should be compatible if we cast or ensure types match.
-// Let's check LocalPage definition in LocalDataManager.ts
-// export interface LocalPage { id: number; title: string; position: number; createdAt: number; }
-// DB Page: { id: number; title: string; userId: number; position: number | null; ... }
-// We need to map DB Page to a compatible type or update DraggableSideBarItem to accept a generic or union.
-
-// Better: Update DraggableSideBarItem to accept a common interface.
-// For now, let's cast or map.
+import { usePathname } from "next/navigation";
 
 interface SideBarListProps {
   initialPages: Page[];
   userId: number;
-  currentPageTitle?: string;
   footer?: React.ReactNode;
 }
 
-const SideBarList: React.FC<SideBarListProps> = ({ initialPages, userId, currentPageTitle, footer }) => {
+const SideBarList: React.FC<SideBarListProps> = ({ initialPages, userId, footer }) => {
+  const pathname = usePathname();
+  // pathname format: /[user]/[pageTitle]
+  // We need to handle URL encoding
+  const currentPathTitle = pathname.split("/")[2] ? decodeURIComponent(pathname.split("/")[2]) : undefined;
+
   // Sort by position initially
   const sortedPages = [...initialPages].sort((a, b) => (a.position || 0) - (b.position || 0));
   const [pages, setPages] = useState(sortedPages);
@@ -46,11 +40,6 @@ const SideBarList: React.FC<SideBarListProps> = ({ initialPages, userId, current
     reorderPagesAction(updates);
   };
 
-  // DraggableSideBarItem expects 'page' prop.
-  // We need to make sure DraggableSideBarItem can handle DB Page type.
-  // Currently it imports LocalPage.
-  // I should update DraggableSideBarItem to use a shared interface or just { id, title }.
-
   return (
     <UnifiedSideBar
       footer={footer}
@@ -61,7 +50,7 @@ const SideBarList: React.FC<SideBarListProps> = ({ initialPages, userId, current
             <DraggableSideBarItem
               key={page.id}
               page={page}
-              isActive={currentPageTitle === page.title}
+              isActive={currentPathTitle === page.title}
               userId={userId}
               isLocal={false}
               onSelect={() => {}}

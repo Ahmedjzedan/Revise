@@ -2,6 +2,9 @@ import { validateSession } from "@/app/_utils/auth";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
+import SideBar from "@/app/_components/UI/Sidebar/SideBar";
+import MotionBorder from "@/app/_components/UI/Online/MotionBorder";
+
 export default async function Layout({
   children,
   params,
@@ -29,6 +32,10 @@ export default async function Layout({
 
   return (
     <>
+      <div className="col-start-1 row-start-1 h-full w-full z-0 flex flex-col overflow-hidden">
+        <SideBar userId={userIdParam} />
+      </div>
+      <MotionBorder />
       {children}
     </>
   );

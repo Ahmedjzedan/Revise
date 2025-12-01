@@ -25,29 +25,29 @@ const MainContentInfo: React.FC<MainContentInfoProps> = (
     >
       {props.isInPage === false ? (
         <div className="text-center">
-          <p className="text-xl text-neutral-400">Welcome</p>
-          <p className="text-3xl text-white mb-4">{props.userName}</p>
-          <p className="text-sm text-neutral-500">Select or create a page to get started</p>
+          <p className="text-xl text-[var(--text-secondary)]">Welcome</p>
+          <p className="text-3xl text-[var(--text-primary)] mb-4">{props.userName}</p>
+          <p className="text-sm text-[var(--text-secondary)]">Select or create a page to get started</p>
         </div>
       ) : (
         <>
           <div className="text-center">
-            <p className="mb-0.5 text-xl text-neutral-400">Page</p>
-            <p className="text-3xl text-white">{props.pageName}</p>
+            <p className="mb-0.5 text-xl text-[var(--text-secondary)]">Page</p>
+            <p className="text-3xl text-[var(--text-primary)]">{props.pageName}</p>
           </div>
 
           <div className="flex gap-4">
             <Link
               href={isCompletedView ? "?" : "?view=completed"}
-              className="px-4 py-2 bg-[#232323] text-neutral-400 hover:text-white rounded-lg transition-colors"
+              className="px-4 py-2 bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-lg transition-colors"
             >
               {isCompletedView ? "View Active Tasks" : "View Completed Tasks"}
             </Link>
           </div>
           
           <div className="text-center">
-            <p className="mb-0.5 text-xl text-neutral-400">Logged in as</p>
-            <p className="text-3xl text-white">{props.userName}</p>
+            <p className="mb-0.5 text-xl text-[var(--text-secondary)]">Logged in as</p>
+            <p className="text-3xl text-[var(--text-primary)]">{props.userName}</p>
           </div>
         </>
       )}

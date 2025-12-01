@@ -2,20 +2,19 @@ import { getPagesForUser } from "@/app/_utils/dbHelpers"; // Adjust path if need
 import { Page } from "@/app/_db/schema";
 import Logout from "@/app/_components/UI/Auth/Logout";
 import SideBarList from "./SideBarList";
+import SidebarFooter from "./SidebarFooter";
 
 interface SideBarProps {
   userId: string;
-  currentPageTitle?: string;
 }
 
-const SideBar = async ({ userId, currentPageTitle }: SideBarProps) => {
+const SideBar = async ({ userId }: SideBarProps) => {
   const userPages: Page[] = await getPagesForUser(userId);
   return (
     <SideBarList 
       initialPages={userPages} 
       userId={Number(userId)} 
-      currentPageTitle={currentPageTitle}
-      footer={<Logout />}
+      footer={<SidebarFooter authButton={<Logout />} />}
     />
   );
 };

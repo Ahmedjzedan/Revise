@@ -3,7 +3,7 @@
 import { db } from "@/app/_db";
 import { nodes } from "@/app/_db/schema";
 import { eq } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 export async function addNodeAction(pageId: number, title: string, maxFullness: number = 5, parentId?: number) {
   try {
@@ -14,10 +14,7 @@ export async function addNodeAction(pageId: number, title: string, maxFullness: 
       fullness: 0,
       parentId,
     });
-    revalidatePath(`/`); // Revalidate everything or specific page?
-    // Since we don't know the user ID here easily without passing it, we might rely on client revalidation or pass path.
-    // But usually revalidatePath works if we know the path.
-    // For now, let's just return success and let client handle refresh if needed, or revalidatePath if we can.
+    revalidateTag(`nodes-${pageId}`);
     return { success: true };
   } catch (error) {
     console.error("Error adding node:", error);
@@ -27,9 +24,14 @@ export async function addNodeAction(pageId: number, title: string, maxFullness: 
 
 export async function updateNodeAction(nodeId: number, data: { title?: string; content?: string; fullness?: number; maxfullness?: number }) {
   try {
-    await db.update(nodes)
+    const result = await db.update(nodes)
       .set(data)
-      .where(eq(nodes.id, nodeId));
+      .where(eq(nodes.id, nodeId))
+      .returning({ pageId: nodes.pageId });
+    
+    if (result[0]) {
+      revalidateTag(`nodes-${result[0].pageId}`);
+    }
     return { success: true };
   } catch (error) {
     console.error("Error updating node:", error);
@@ -39,7 +41,13 @@ export async function updateNodeAction(nodeId: number, data: { title?: string; c
 
 export async function deleteNodeAction(nodeId: number) {
   try {
-    await db.delete(nodes).where(eq(nodes.id, nodeId));
+    const result = await db.delete(nodes)
+      .where(eq(nodes.id, nodeId))
+      .returning({ pageId: nodes.pageId });
+
+    if (result[0]) {
+      revalidateTag(`nodes-${result[0].pageId}`);
+    }
     return { success: true };
   } catch (error) {
     console.error("Error deleting node:", error);
@@ -79,6 +87,7 @@ export async function moveNodeAction(nodeId: number, direction: "up" | "down", p
           .set({ position: adjacentNode.position || 0 })
           .where(eq(nodes.id, nodeId));
       });
+      revalidateTag(`nodes-${pageId}`);
     } else {
       return { success: false, message: "Cannot move further" };
     }
@@ -92,10 +101,14 @@ export async function moveNodeAction(nodeId: number, direction: "up" | "down", p
 
 export async function updateNodeFullnessAction(nodeId: number, newFullness: number) {
   try {
-    await db.update(nodes)
+    const result = await db.update(nodes)
       .set({ fullness: newFullness })
-      .where(eq(nodes.id, nodeId));
-    revalidatePath("/[user]/[pageTitle]");
+      .where(eq(nodes.id, nodeId))
+      .returning({ pageId: nodes.pageId });
+
+    if (result[0]) {
+      revalidateTag(`nodes-${result[0].pageId}`);
+    }
     return { success: true };
   } catch (error) {
     console.error("Error updating node fullness:", error);
@@ -105,13 +118,21 @@ export async function updateNodeFullnessAction(nodeId: number, newFullness: numb
 
 export async function reorderNodesAction(updates: { id: number; position: number }[]) {
   try {
+    let pageId: number | null = null;
     for (const update of updates) {
-      await db
+      const result = await db
         .update(nodes)
         .set({ position: update.position })
-        .where(eq(nodes.id, update.id));
+        .where(eq(nodes.id, update.id))
+        .returning({ pageId: nodes.pageId });
+      
+      if (result[0]) {
+        pageId = result[0].pageId;
+      }
     }
-    // Revalidate? Client might handle it optimistically.
+    if (pageId) {
+      revalidateTag(`nodes-${pageId}`);
+    }
     return { success: true };
   } catch (error) {
     console.error("Error reordering nodes:", error);
@@ -121,13 +142,23 @@ export async function reorderNodesAction(updates: { id: number; position: number
 
 export async function toggleNodeCompletion(nodeId: number, completed: boolean) {
   try {
-    await db.update(nodes)
-      .set({ 
-        completed, 
-        completedAt: completed ? new Date() : null 
-      })
-      .where(eq(nodes.id, nodeId));
-    revalidatePath("/[user]/[pageTitle]");
+    const updateData: any = { 
+      completed, 
+      completedAt: completed ? new Date() : null 
+    };
+
+    if (!completed) {
+      updateData.fullness = 0;
+    }
+
+    const result = await db.update(nodes)
+      .set(updateData)
+      .where(eq(nodes.id, nodeId))
+      .returning({ pageId: nodes.pageId });
+
+    if (result[0]) {
+      revalidateTag(`nodes-${result[0].pageId}`);
+    }
     return { success: true };
   } catch (error) {
     console.error("Error toggling node completion:", error);

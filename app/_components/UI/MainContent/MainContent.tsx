@@ -37,7 +37,7 @@ const MainContent: React.FC<MainContentProps> = ({ pageId }) => {
 
   useEffect(() => {
     fetchNodes();
-  }, [pageId]);
+  }, [pageId, isCompletedView]);
 
   const handleNodeUpdate = async (nodeId: string, newFill: number) => {
     setNodes((prevNodes) =>
@@ -70,7 +70,7 @@ const MainContent: React.FC<MainContentProps> = ({ pageId }) => {
   return (
     <div className="flex-1 overflow-y-auto overflow-x-hidden relative pb-20">
       <div className="flex justify-between items-center px-12 pt-5 mb-2">
-        <h2 className="text-xl text-neutral-400 font-light">Tasks: {activeNodes.length}</h2>
+        <h2 className="text-xl text-[var(--text-secondary)] font-light">Tasks: {activeNodes.length}</h2>
       </div>
 
       <div className="flex flex-col gap-5 pt-2">
@@ -102,14 +102,14 @@ const MainContent: React.FC<MainContentProps> = ({ pageId }) => {
       <div className="flex justify-center mt-10 mb-10 px-5">
         <button
           onClick={() => setIsCreateModalOpen(true)}
-          className={`group relative flex items-center justify-center rounded-full bg-[#232323] hover:bg-white transition-all duration-300 shadow-lg
-            ${activeNodes.length === 0 ? "w-full h-20 rounded-2xl" : "w-16 h-16"}
+          className={`group relative flex items-center justify-center rounded-full bg-[var(--bg-secondary)] hover:bg-[var(--bg-active)] transition-all duration-300 shadow-lg border border-[var(--border-color)]
+            ${activeNodes.length === 0 ? "w-64 h-16 rounded-2xl" : "w-16 h-16"}
           `}
         >
-          <span className={`text-3xl text-neutral-400 group-hover:text-black transition-colors duration-300 pb-1
+          <span className={`text-3xl text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors duration-300 pb-1
              ${activeNodes.length === 0 ? "text-xl font-light tracking-widest" : ""}
           `}>
-            {activeNodes.length === 0 ? "+ Add First Element" : "+"}
+            {activeNodes.length === 0 ? "+ Add Element" : "+"}
           </span>
         </button>
       </div>

@@ -3,13 +3,25 @@
 import { db } from "@/app/_db";
 import { pages } from "@/app/_db/schema";
 import { eq, and } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 export async function renamePage(pageId: number, newTitle: string, userId: number) {
   try {
+    // Fetch old title for cache invalidation
+    const oldPage = await db.query.pages.findFirst({
+      where: and(eq(pages.id, pageId), eq(pages.userId, userId)),
+      columns: { title: true }
+    });
+
     await db.update(pages)
       .set({ title: newTitle })
       .where(and(eq(pages.id, pageId), eq(pages.userId, userId)));
+    
+    if (oldPage) {
+      revalidateTag(`page-id-${userId}-${oldPage.title}`);
+    }
+    // Also invalidate the new title just in case (though it should be empty/miss)
+    revalidateTag(`page-id-${userId}-${newTitle}`);
     
     revalidatePath(`/${userId}`);
     return { success: true };
@@ -21,11 +33,18 @@ export async function renamePage(pageId: number, newTitle: string, userId: numbe
 
 export async function deletePageAction(pageId: number, userId: number) {
   try {
-    // Delete nodes first (cascade usually handles this but good to be explicit or rely on DB)
-    // Assuming cascade delete is not set up in schema (it wasn't explicitly), we might need to delete nodes first.
-    // But let's assume we can just delete page for now.
+    // Fetch title for cache invalidation
+    const page = await db.query.pages.findFirst({
+      where: and(eq(pages.id, pageId), eq(pages.userId, userId)),
+      columns: { title: true }
+    });
+
     await db.delete(pages).where(and(eq(pages.id, pageId), eq(pages.userId, userId)));
     
+    if (page) {
+      revalidateTag(`page-id-${userId}-${page.title}`);
+    }
+
     revalidatePath(`/${userId}`);
     return { success: true };
   } catch (error) {

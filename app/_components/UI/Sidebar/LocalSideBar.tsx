@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Reorder } from "framer-motion";
 import DraggableSideBarItem from "./DraggableSideBarItem";
 import UnifiedSideBar from "./UnifiedSideBar";
+import SidebarFooter from "./SidebarFooter";
 
 interface LocalSideBarProps {
   currentPageId: number | null;
@@ -52,16 +53,20 @@ const LocalSideBar: React.FC<LocalSideBarProps> = ({ currentPageId, onPageSelect
     <>
       <UnifiedSideBar
         footer={
-          <Link href="/login" className="text-neutral-500 hover:text-white transition-colors">
-            Sign In / Login
-          </Link>
+          <SidebarFooter
+            authButton={
+              <Link href="/login" className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
+                Sign In / Login
+              </Link>
+            }
+          />
         }
         addButton={
           <button
             onClick={handleAddPage}
-            className="relative flex h-15 cursor-pointer justify-center items-center w-full text-3xl p-3 transition-all duration-500 text-neutral-400 hover:text-white active:bg-neutral-800 bg-[#232323]"
+            className="relative flex h-15 cursor-pointer justify-center items-center w-full text-3xl p-3 transition-all duration-500 text-[var(--text-secondary)] hover:text-[var(--text-primary)] active:bg-neutral-800 bg-[var(--bg-secondary)]"
           >
-            <span className="relative z-10 transition-colors duration-300 text-4xl hover:text-white">
+            <span className="relative z-10 transition-colors duration-300 text-4xl hover:text-[var(--text-primary)]">
               +
             </span>
           </button>

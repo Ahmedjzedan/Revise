@@ -1,5 +1,3 @@
-import SideBar from "@/app/_components/UI/Sidebar/SideBar";
-import MotionBorder from "@/app/_components/UI/Online/MotionBorder";
 import MainContentInfo from "@/app/_components/UI/MainContent/MainContentInfo";
 import { getUserNameById } from "@/app/_utils/dbAuthHelpers";
 import { notFound } from "next/navigation";
@@ -20,12 +18,6 @@ export default async function Page({ params }: PageProps) {
 
   return (
     <>
-      <div className="col-start-1 row-start-1 h-full w-full z-0 flex flex-col overflow-hidden">
-        <SideBar userId={user} />
-      </div>
-
-      <MotionBorder />
-
       <div className="row-start-1 row-span-2 h-full col-start-3">
         <MainContentInfo userName={userName || undefined} isInPage={false}></MainContentInfo>
       </div>

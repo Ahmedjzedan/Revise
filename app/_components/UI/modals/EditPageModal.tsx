@@ -1,5 +1,6 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import { renamePage, deletePageAction } from "@/app/_utils/pageActions";
 import { toast } from "sonner";
@@ -36,25 +37,34 @@ const EditPageModal: React.FC<EditPageModalProps> = ({
     });
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80" onClick={onClose}>
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
+  if (!mounted) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80" onClick={onClose}>
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.9 }}
-        className="bg-[#1a1a1a] border border-white/20 p-8 rounded-2xl w-[500px] max-w-full mx-4 shadow-2xl"
+        className="bg-[var(--bg-secondary)] border border-[var(--border-color)] p-8 rounded-2xl w-[500px] max-w-full mx-4 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="text-2xl font-light mb-6 text-white tracking-wide">Edit Page</h3>
+        <h3 className="text-2xl font-light mb-6 text-[var(--text-primary)] tracking-wide">Edit Page</h3>
         
         <div className="flex flex-col gap-6">
           <div>
-            <label className="block text-neutral-400 text-sm mb-2">Title</label>
+            <label className="block text-[var(--text-secondary)] text-sm mb-2">Title</label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full bg-[#333] text-white p-4 rounded-xl border border-transparent focus:border-white outline-none transition-all text-lg"
+              className="w-full bg-[var(--bg-primary)] text-[var(--text-primary)] p-4 rounded-xl border border-transparent focus:border-[var(--text-primary)] outline-none transition-all text-lg"
               placeholder="Page Title"
             />
           </div>
@@ -62,7 +72,7 @@ const EditPageModal: React.FC<EditPageModalProps> = ({
           <div className="flex flex-col gap-3 mt-4">
              <button 
                onClick={handleRename}
-               className="w-full py-3 bg-white text-black rounded-xl hover:bg-neutral-200 transition-colors font-medium"
+               className="w-full py-3 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-xl hover:opacity-90 transition-colors font-medium"
              >
                Rename
              </button>
@@ -75,7 +85,8 @@ const EditPageModal: React.FC<EditPageModalProps> = ({
           </div>
         </div>
       </motion.div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
