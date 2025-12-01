@@ -7,15 +7,40 @@ import { motion } from "framer-motion";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 
+import { getCurrentUser } from "@/app/_utils/userActions";
 import ReviseLogo from "../ReviseLogo";
 
-export default function ClientHeader() {
+interface ClientHeaderProps {
+  userId?: string | null;
+}
+
+export default function ClientHeader({ userId: initialUserId }: ClientHeaderProps) {
   const pathname = usePathname();
   const [currentPath, setCurrentPath] = useState(pathname);
+  const [userId, setUserId] = useState<string | null>(initialUserId || null);
 
   useEffect(() => {
     setCurrentPath(pathname);
   }, [pathname]);
+
+  useEffect(() => {
+    // If we don't have a userId, or if we want to re-validate on mount/navigation
+    // Let's fetch it.
+    const fetchUser = async () => {
+      try {
+        const user = await getCurrentUser();
+        if (user) {
+          setUserId(user.id.toString());
+        } else {
+          setUserId(null);
+        }
+      } catch (error) {
+        console.error("Failed to fetch user", error);
+      }
+    };
+    
+    fetchUser();
+  }, [pathname]); // Re-fetch on path change to be safe, or just once on mount? Path change is safer for login/logout flows that might not reload.
 
   const titleVariants = {
     current: {
@@ -49,7 +74,7 @@ export default function ClientHeader() {
         initial="nav"
         animate="nav"
       >
-        <ReviseLogo isAuthPage={pathname === "/login" || pathname === "/signup"} />
+        <ReviseLogo isAuthPage={pathname === "/login" || pathname === "/signup"} userId={userId} />
       </motion.div>
       {pathname !== "/login" && pathname !== "/signup" && (
         <motion.div

@@ -18,9 +18,9 @@ const AddPageButton = () => {
     <>
       <button
         onClick={handleOpenModal}
-        className="relative flex h-15 cursor-pointer justify-center items-center w-full text-3xl p-3 transition-all duration-500 text-neutral-400 hover:text-white active:bg-neutral-800 bg-[#232323]"
+        className="relative flex h-15 cursor-pointer justify-center items-center w-full text-3xl p-3 transition-all duration-500 text-[var(--text-secondary)] hover:text-[var(--text-primary)] active:bg-[var(--bg-active)] bg-[var(--bg-secondary)]"
       >
-        <motion.span className="relative z-10 transition-colors duration-300 text-4xl hover:text-white">
+        <motion.span className="relative z-10 transition-colors duration-300 text-4xl text-neutral-500 dark:text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
           +
         </motion.span>
       </button>
