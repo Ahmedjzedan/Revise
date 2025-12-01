@@ -3,7 +3,7 @@
 import { db } from "@/app/_db";
 import { nodes } from "@/app/_db/schema";
 import { eq } from "drizzle-orm";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidateTag } from "next/cache";
 
 export async function addNodeAction(pageId: number, title: string, maxFullness: number = 5, parentId?: number) {
   try {
@@ -142,7 +142,7 @@ export async function reorderNodesAction(updates: { id: number; position: number
 
 export async function toggleNodeCompletion(nodeId: number, completed: boolean) {
   try {
-    const updateData: any = { 
+    const updateData: { completed: boolean; completedAt: Date | null; fullness?: number } = { 
       completed, 
       completedAt: completed ? new Date() : null 
     };

@@ -3,7 +3,6 @@ import "./globals.css";
 import ClientHeader from "./_components/UI/MainLayout/ClientHeader";
 import LayoutContentWrapper from "./_components/UI/MainLayout/LayoutContentWrapper";
 import MainAuthButtons from "./_components/UI/Auth/MainAuthButtons";
-import AnimatePresenceProvider from "@/app/_components/Providers/AnimatepresenceProvider";
 import ToastProvider from "@/app/_components/Providers/ToastProvider";
 import { Inria_Sans } from "next/font/google";
 

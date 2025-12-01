@@ -24,7 +24,7 @@ export default function About() {
             but also leave a lasting impression.
           </p>
           <p>
-            "Revise" is a testament to my belief in minimalist, functional design—where 
+            &quot;Revise&quot; is a testament to my belief in minimalist, functional design—where 
             every element serves a purpose, and the user experience is paramount.
           </p>
         </div>
