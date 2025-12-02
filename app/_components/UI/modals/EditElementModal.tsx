@@ -53,8 +53,12 @@ const EditElementModal: React.FC<EditElementModalProps> = ({
   const handleAddChild = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!childTitle) return;
-    // Defaulting to type="revision" and maxFullness=1 for children as requested
-    await addNodeAction(pageId, childTitle, 1, nodeId, "revision");
+    
+    // Inherit parent type
+    const childType = initialType === "bar" ? "bar" : "revision";
+    const childMaxFullness = initialType === "bar" ? 0 : 1;
+
+    await addNodeAction(pageId, childTitle, childMaxFullness, nodeId, childType);
     setChildTitle("");
     setIsAddChildOpen(false);
     onSuccess();

@@ -129,8 +129,8 @@ const MainContent: React.FC<MainContentProps> = ({ pageId }) => {
               ? children.length
               : (node.maxfullness || 5);
 
-            // Determine type: if it has children, treat as revision to show progress bar
-            const displayType = hasChildren ? "revision" : (node.type || "bar");
+            // Determine type: respect the node's type
+            const displayType = node.type || "bar";
 
             return (
               <div key={node.id}>

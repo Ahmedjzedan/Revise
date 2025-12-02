@@ -81,12 +81,9 @@ const MainContentElement: React.FC<
     <div 
       id={`node-${id}`} 
       className={`relative group/item ml-4 mr-4 md:ml-10 md:mr-28 mt-5 transition-all duration-300 ${
-        pinned ? "scale-105" : ""
+        pinned ? "border-2 border-yellow-500/50 bg-yellow-500/5 rounded-xl" : ""
       }`}
     >
-      {pinned && (
-        <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400/50 via-yellow-200/50 to-yellow-400/50 rounded-xl blur-sm animate-pulse -z-10"></div>
-      )}
       <button
         className={
           `group relative flex items-center justify-between h-24 rounded-xl hover:bg-[var(--text-secondary)]
@@ -106,25 +103,8 @@ const MainContentElement: React.FC<
               handleCompletion();
             }
           } else if (!isRevision) {
-             // For normal tasks, maybe just toggle completion on click?
-             // Or maybe we need a checkbox? 
-             // User said "normal task is a task without fill so like a note or todo list"
-             // Usually todo lists complete on click or checkbox. 
-             // Let's assume click completes it immediately or maybe we shouldn't handle click for fill?
-             // "if he hit normal task, you create a task with out the fill"
-             // Let's just handle completion if they want to complete it via the edit menu or maybe a check button?
-             // For now, let's just make it clickable to complete? Or maybe not.
-             // The user didn't specify interaction for normal task, just "without fill".
-             // I'll leave click handler empty for now or maybe toggle completion?
-             // Let's stick to the requested change: "without the fill".
-             // If I remove fill logic, it won't complete.
-             // I'll add a check icon for completion for normal tasks later if needed, but for now just removing fill logic.
-             // Actually, `handleCompletion` is called when fill == maxFill.
-             // If maxFill is 0, we can't use fill logic.
-             // I will add a simple toggle completion on click for normal tasks?
-             // "like a note or todo list".
-             // Let's just disable the fill logic for now.
-             handleCompletion();
+             // For normal tasks, open edit modal on click
+             onEdit();
           }
         }}
       >
