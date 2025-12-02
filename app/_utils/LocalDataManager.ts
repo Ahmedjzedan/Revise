@@ -17,6 +17,7 @@ export interface LocalNode {
   content: string;
   parentId?: number;
   createdAt: number;
+  type?: "bar" | "revision";
 }
 
 const PAGES_KEY = "revise_local_pages";
@@ -83,7 +84,7 @@ export const LocalDataManager = {
     return nodes.filter((n) => n.pageId === pageId).sort((a, b) => a.position - b.position);
   },
 
-  addNode: (pageId: number, title: string, maxFullness: number = 5, parentId?: number): LocalNode => {
+  addNode: (pageId: number, title: string, maxFullness: number = 5, parentId?: number, type: "bar" | "revision" = "bar"): LocalNode => {
     const nodes = LocalDataManager.getAllNodes();
     const pageNodes = nodes.filter((n) => n.pageId === pageId);
     const newNode: LocalNode = {
@@ -96,6 +97,7 @@ export const LocalDataManager = {
       content: "",
       parentId,
       createdAt: Date.now(),
+      type,
     };
     nodes.push(newNode);
     LocalDataManager.saveNodes(nodes);

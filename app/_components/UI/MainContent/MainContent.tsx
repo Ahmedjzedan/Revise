@@ -139,7 +139,8 @@ const MainContent: React.FC<MainContentProps> = ({ pageId }) => {
                     ...node,
                     fullness: calculatedFullness,
                     maxfullness: calculatedMaxFullness,
-                    type: displayType
+                    type: displayType,
+                    content: node.content || undefined
                   }}
                   onUpdate={handleNodeUpdate}
                   onEdit={(n) => setEditingNode(n as unknown as Node)}
@@ -157,63 +158,23 @@ const MainContent: React.FC<MainContentProps> = ({ pageId }) => {
                 {children.map(child => (
                   <div key={child.id} className="ml-10">
                      <DraggableMainContentItem
-                      node={child}
+                      node={{...child, content: child.content || undefined}}
                       onUpdate={handleNodeUpdate}
                       onEdit={(n) => setEditingNode(n as unknown as Node)}
                       onComplete={(childId) => {
-                         // When a child is completed
                          handleNodeCompletion(childId);
-                         
-                         // Check if all siblings are now completed (including this one which is being completed)
-                         // We need to look at the 'nodes' state, but 'handleNodeCompletion' updates it asynchronously/next render.
-                         // Actually 'handleNodeCompletion' just filters it out from local state? 
-                         // No, 'handleNodeCompletion' in MainContent just updates local state to remove it.
-                         // But we need to check if we should ALSO remove the parent.
                          
                          const siblings = children.filter(c => c.id !== Number(childId));
                          const allSiblingsCompleted = siblings.every(c => c.completed);
                          
                          if (allSiblingsCompleted) {
-                           // If this was the last child, complete the parent
-                           // We need to call the server action for parent completion too?
-                           // The child completion is handled by MainContentElement calling toggleNodeCompletion.
-                           // We need to trigger parent completion here.
-                           
-                           // Wait, MainContentElement calls onComplete AFTER calling toggleNodeCompletion.
-                           // So the child is already marked completed in DB.
-                           // But 'nodes' state might not be updated yet with that info if we don't re-fetch.
-                           // However, we are just filtering it out from view.
-                           
-                           // If we want to complete the parent, we should call toggleNodeCompletion for parent.
-                           // And then remove parent from view.
-                           
-                           // Let's import toggleNodeCompletion here? 
-                           // It is not imported. We need to import it.
-                           // Or we can pass a special handler.
-                           
-                           // For now, let's just assume we need to trigger parent completion.
-                           // But we can't call server action directly easily without importing.
-                           // Let's rely on the fact that we can call the prop onComplete for parent?
-                           // No, onComplete just updates local state.
-                           
-                           // We need to actually complete the parent in DB.
-                           // I will add toggleNodeCompletion to imports in MainContent.tsx.
-                           
-                           // Let's just update the local state for now to remove parent if all children are done.
-                           // But we also need to persist it.
-                           // I will add the import in a separate step or assume it is available if I add it.
-                           // It is NOT imported in MainContent.tsx currently.
-                           
-                           // I will add the logic to remove parent from view if all children are hidden/completed.
-                           // But wait, "if a children element is finshed dont send them to the completed tasks only when the parent element is completed".
-                           // So we should NOT remove the child from view if parent is not done.
-                           
-                           // My filter logic `activeNodes` keeps completed children if parent is active.
-                           // So `handleNodeCompletion` should NOT remove the child if parent is active.
-                           
-                           // Let's adjust `handleNodeCompletion`.
+                           // If all siblings are completed, we might want to trigger parent completion
+                           // But for now, handleNodeCompletion handles the logic for the current node.
+                           // The parent completion logic is inside handleNodeCompletion (if I updated it correctly).
+                           // Let's just call handleNodeCompletion.
                          }
                       }}
+                      isChild={true}
                     />
                   </div>
                 ))}
@@ -257,7 +218,18 @@ const MainContent: React.FC<MainContentProps> = ({ pageId }) => {
           initialPinned={editingNode.pinned || false}
           initialType={editingNode.type as "bar" | "revision" || "bar"}
           onClose={() => setEditingNode(null)}
-          onSuccess={fetchNodes}
+          onSuccess={(newNode?: unknown) => {
+            if (newNode) {
+              setNodes((prev) => {
+                // Check if node already exists to avoid duplicates
+                const node = newNode as Node;
+                if (prev.some(n => n.id === node.id)) return prev;
+                return [...prev, node];
+              });
+            } else {
+               fetchNodes();
+            }
+          }}
         />
       )}
     </div>

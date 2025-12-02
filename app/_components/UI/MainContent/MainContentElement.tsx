@@ -20,6 +20,7 @@ interface SideBarElementProps {
   dragControls?: DragControls;
   pinned?: boolean;
   type?: "bar" | "revision";
+  content?: string;
 }
 
 const MainContentElement: React.FC<
@@ -38,6 +39,7 @@ const MainContentElement: React.FC<
   dragControls,
   pinned = false,
   type = "bar",
+  content,
 }) => {
   const [maxFill] = useState(maxFillProp);
   const [fill, setFill] = useState(fillProp > maxFill ? maxFill : fillProp);
@@ -50,28 +52,42 @@ const MainContentElement: React.FC<
 
   const handleCompletion = async () => {
     setIsCompleted(true);
-    setShowTimer(true);
     
-    // Trigger confetti
-    const rect = document.getElementById(`node-${id}`)?.getBoundingClientRect();
-    if (rect) {
-      const x = (rect.left + rect.width / 2) / window.innerWidth;
-      const y = (rect.top + rect.height / 2) / window.innerHeight;
-      confetti({
-        origin: { x, y },
-        particleCount: 100,
-        spread: 70,
-        colors: ['#26ccff', '#a25afd', '#ff5e7e', '#88ff5a', '#fcff42', '#ffa62d', '#ff36ff'],
-      });
+    if (!isChild) {
+      setShowTimer(true);
+      
+      // Trigger confetti
+      const rect = document.getElementById(`node-${id}`)?.getBoundingClientRect();
+      if (rect) {
+        const x = (rect.left + rect.width / 2) / window.innerWidth;
+        const y = (rect.top + rect.height / 2) / window.innerHeight;
+        confetti({
+          origin: { x, y },
+          particleCount: 100,
+          spread: 70,
+          colors: ['#26ccff', '#a25afd', '#ff5e7e', '#88ff5a', '#fcff42', '#ffa62d', '#ff36ff'],
+        });
+      }
     }
 
-    // Wait 3 seconds then mark as completed
-    setTimeout(async () => {
+    // Wait 3 seconds then mark as completed if it's a parent (due to timer)
+    // If it's a child, complete immediately or maybe with a small delay?
+    // User said "remove that small bar that indicates the element will go to the completed tab in the child elemeents"
+    // So for child, we just complete it.
+    
+    if (isChild) {
       await toggleNodeCompletion(Number(id), true);
       if (onComplete) {
         onComplete(id);
       }
-    }, 3000);
+    } else {
+      setTimeout(async () => {
+        await toggleNodeCompletion(Number(id), true);
+        if (onComplete) {
+          onComplete(id);
+        }
+      }, 3000);
+    }
   };
 
   const widthFill = maxFill > 0 ? (fill / maxFill) * 100 : 0;
@@ -113,7 +129,7 @@ const MainContentElement: React.FC<
             <motion.div
               className={
                 `absolute inset-0 z-1 ` +
-                (isCompleted ? "bg-green-500" : "group-hover:bg-[var(--text-secondary)] bg-[var(--bg-primary)]") + " " +
+                (isCompleted && !isChild ? "bg-green-500" : (isChild ? "bg-[var(--text-primary)]" : "group-hover:bg-[var(--text-secondary)] bg-[var(--bg-primary)]")) + " " +
                 (fill === maxFill ? "rounded-xl" : "rounded-l-xl rounded-r-[0px]")
               }
               initial={{ width: 0 }}
@@ -135,11 +151,16 @@ const MainContentElement: React.FC<
           </>
         )}
         
-        <div className="z-2 flex flex-col items-start w-full">
-          <span className={`transition-colors duration-300 text-[var(--text-primary)] ${isRevision ? "group-hover:text-[var(--bg-primary)]" : ""}`}>
+        <div className="z-2 flex flex-col items-start w-full relative">
+          <span className={`transition-colors duration-300 text-[var(--text-primary)] ${isRevision ? "group-hover:text-[var(--bg-primary)]" : ""} ${isChild ? "relative z-10 mix-blend-difference" : ""}`}>
             {title}
+            {!isRevision && content && (
+              <span className="text-sm text-[var(--text-secondary)] truncate ml-4 font-light opacity-70">
+                {content.length > 30 ? content.substring(0, 30) + "..." : content}
+              </span>
+            )}
           </span>
-          {showTimer && (
+          {showTimer && !isChild && (
             <div className="w-full h-1 bg-white/30 rounded-full mt-1 overflow-hidden">
                <motion.div 
                  className="h-full bg-white"

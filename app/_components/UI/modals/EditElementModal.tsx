@@ -14,7 +14,7 @@ interface EditElementModalProps {
   initialPinned?: boolean;
   initialType?: "bar" | "revision";
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (newNode?: unknown) => void;
 }
 
 const EditElementModal: React.FC<EditElementModalProps> = ({
@@ -58,10 +58,21 @@ const EditElementModal: React.FC<EditElementModalProps> = ({
     const childType = initialType === "bar" ? "bar" : "revision";
     const childMaxFullness = initialType === "bar" ? 0 : 1;
 
-    await addNodeAction(pageId, childTitle, childMaxFullness, nodeId, childType);
-    setChildTitle("");
-    setIsAddChildOpen(false);
-    onSuccess();
+    try {
+      const result = await addNodeAction(pageId, childTitle, childMaxFullness, nodeId, childType);
+      if (result?.success && result.node) {
+        toast.success("Child element created");
+        // Pass the new node to onSuccess for optimistic update
+        onSuccess(result.node);
+      } else {
+        toast.error("Failed to create child element");
+      }
+    } catch (error) {
+      toast.error("An error occurred while creating child element");
+    } finally {
+      setChildTitle("");
+      setIsAddChildOpen(false);
+    }
   };
 
   const handleDelete = async () => {
@@ -187,35 +198,44 @@ const EditElementModal: React.FC<EditElementModalProps> = ({
           <div className="flex flex-col gap-3 mt-4">
              <button 
                onClick={handleUpdate}
-               className="w-full py-3 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-xl hover:opacity-90 transition-colors font-medium"
+               className="w-full py-3 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-xl hover:opacity-90 transition-colors font-medium flex items-center justify-center gap-2"
              >
+               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
                Save Changes
              </button>
              
-             <button
-               onClick={() => setIsAddChildOpen(true)}
-               className="w-full py-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] rounded-xl hover:bg-[var(--border-color)] transition-colors font-medium"
-             >
-               Add Child Element
-             </button>
+             <div className="grid grid-cols-3 gap-3">
+               <button
+                 onClick={() => setIsAddChildOpen(true)}
+                 className="flex flex-col items-center justify-center gap-1 py-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] rounded-xl hover:bg-[var(--border-color)] transition-colors text-sm font-medium"
+                 title="Add Child"
+               >
+                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                 <span>Add Child</span>
+               </button>
 
-             <button
-               onClick={handlePin}
-               className={`w-full py-3 border rounded-xl transition-colors font-medium ${
-                 isPinned 
-                   ? "bg-yellow-500/10 border-yellow-500 text-yellow-500 hover:bg-yellow-500/20" 
-                   : "border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--text-primary)]"
-               }`}
-             >
-               {isPinned ? "Unpin Element" : "Pin Element"}
-             </button>
+               <button
+                 onClick={handlePin}
+                 className={`flex flex-col items-center justify-center gap-1 py-3 border rounded-xl transition-colors text-sm font-medium ${
+                   isPinned 
+                     ? "bg-yellow-500/10 border-yellow-500 text-yellow-500 hover:bg-yellow-500/20" 
+                     : "border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--text-primary)]"
+                 }`}
+                 title={isPinned ? "Unpin" : "Pin"}
+               >
+                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/></svg>
+                 <span>{isPinned ? "Unpin" : "Pin"}</span>
+               </button>
 
-             <button 
-               onClick={handleDelete}
-               className="w-full py-3 border border-red-500 text-red-500 rounded-xl hover:bg-red-500/10 transition-colors"
-             >
-               Delete Element
-             </button>
+               <button 
+                 onClick={handleDelete}
+                 className="flex flex-col items-center justify-center gap-1 py-3 border border-red-500 text-red-500 rounded-xl hover:bg-red-500/10 transition-colors text-sm font-medium"
+                 title="Delete"
+               >
+                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                 <span>Delete</span>
+               </button>
+             </div>
           </div>
         </div>
 

@@ -18,6 +18,7 @@ interface DraggableMainContentItemProps {
   onUpdate: (nodeId: string, newFill: number) => void;
   onEdit: (node: NodeItem) => void;
   onComplete: (nodeId: string) => void;
+  isChild?: boolean;
 }
 
 const DraggableMainContentItem: React.FC<DraggableMainContentItemProps> = ({
@@ -25,6 +26,7 @@ const DraggableMainContentItem: React.FC<DraggableMainContentItemProps> = ({
   onUpdate,
   onEdit,
   onComplete,
+  isChild = false,
 }) => {
   const controls = useDragControls();
 
@@ -46,6 +48,8 @@ const DraggableMainContentItem: React.FC<DraggableMainContentItemProps> = ({
         dragControls={controls}
         pinned={node.pinned || false}
         type={node.type as "bar" | "revision" || "bar"}
+        content={node.content || undefined}
+        isChild={isChild}
       />
     </Reorder.Item>
   );
