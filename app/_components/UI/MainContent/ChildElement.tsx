@@ -55,9 +55,7 @@ const ChildElement: React.FC<ChildElementProps> = ({
   return (
     <div 
       id={`node-${id}`} 
-      className={`relative group/item ml-4 mr-4 md:ml-10 md:mr-28 mt-2 transition-all duration-300 ${
-        pinned ? "border-2 border-yellow-500/50 bg-yellow-500/5 rounded-xl" : ""
-      }`}
+      className={`relative group/item ml-4 mr-4 md:ml-10 md:mr-28 mt-2 transition-all duration-300`}
     >
       <button
         className={
@@ -97,7 +95,13 @@ const ChildElement: React.FC<ChildElementProps> = ({
         {/* Base Content Layer (Visible on background) */}
         <div className="flex items-center justify-between w-full h-full relative z-2">
           <div className="flex flex-col items-start w-full">
-            <span className="transition-colors duration-300 text-[var(--text-primary)]">
+            <span className="transition-colors duration-300 text-[var(--text-primary)] flex items-center gap-3">
+              {pinned && (
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                  <line x1="12" y1="17" x2="12" y2="22"></line>
+                  <path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path>
+                </svg>
+              )}
               {title}
               {!isRevision && content && (
                 <span className="text-sm text-[var(--text-secondary)] truncate ml-4 font-light opacity-70">
@@ -126,7 +130,13 @@ const ChildElement: React.FC<ChildElementProps> = ({
             transition={{ duration: 0.5, ease: "linear" }}
           >
              <div className="flex flex-col items-start w-full">
-              <span className={`transition-colors duration-300 ${isCompleted ? "text-white" : "text-black dark:text-black [.light_&]:text-white"}`}>
+              <span className={`transition-colors duration-300 flex items-center gap-3 ${isCompleted ? "text-white" : "text-black dark:text-black [.light_&]:text-white"}`}>
+                {pinned && (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                    <line x1="12" y1="17" x2="12" y2="22"></line>
+                    <path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path>
+                  </svg>
+                )}
                 {title}
                 {!isRevision && content && (
                   <span className="text-sm opacity-70">

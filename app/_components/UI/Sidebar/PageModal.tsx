@@ -55,7 +55,7 @@ const PageModal: React.FC<CreatePageModalProps> = ({ userId, pageTitle: _pageTit
       {typeof document !== 'undefined' && createPortal(
         <>
           <motion.div
-            className="fixed inset-0 z-[100] bg-black/95"
+            className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm"
             variants={fadeInVariants}
             initial="hidden"
             animate="visible"
@@ -64,7 +64,7 @@ const PageModal: React.FC<CreatePageModalProps> = ({ userId, pageTitle: _pageTit
           ></motion.div>
 
           <motion.div
-            className="fixed top-1/8 -translate-x-1/2 left-1/2 z-[150] text-4xl"
+            className="fixed top-1/8 -translate-x-1/2 left-1/2 z-[150] text-4xl text-[var(--text-primary)]"
             variants={fadeInVariants}
             initial="hidden"
             animate="visible"
@@ -75,7 +75,7 @@ const PageModal: React.FC<CreatePageModalProps> = ({ userId, pageTitle: _pageTit
 
           <motion.div
             className="fixed inset-0 m-auto flex h-fit w-[90%] md:w-1/2 z-[150] items-start justify-center
-                       border-3 border-white rounded-lg bg-[#373737] p-5"
+                       border border-[var(--border-color)] rounded-lg bg-[var(--bg-secondary)] p-5 shadow-xl"
             variants={fadeInVariants}
             initial="hidden"
             animate="visible"
@@ -83,7 +83,7 @@ const PageModal: React.FC<CreatePageModalProps> = ({ userId, pageTitle: _pageTit
           >
             <form className="m-10 w-full" onSubmit={handleCreatePage}>
               <input
-                className="border-2 mb-10 py-3 px-5 rounded-md bg-[#484848] w-full"
+                className="border border-[var(--border-color)] mb-10 py-3 px-5 rounded-md bg-[var(--bg-primary)] text-[var(--text-primary)] w-full placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--text-primary)]/20"
                 type="text"
                 placeholder="Page name"
                 value={pageName}
@@ -98,16 +98,16 @@ const PageModal: React.FC<CreatePageModalProps> = ({ userId, pageTitle: _pageTit
                 <button
                   type="button"
                   onClick={_onClose}
-                  className="border-2 border-white rounded-sm px-4 py-1 cursor-pointer
-                             transition-all duration-150 hover:scale-110 bg-black/15 text-white"
+                  className="border border-[var(--border-color)] rounded-sm px-4 py-1 cursor-pointer
+                             transition-all duration-150 hover:scale-105 bg-[var(--bg-primary)] text-[var(--text-primary)] hover:bg-[var(--bg-active)]"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="border-2 border-white rounded-sm px-4 py-1 cursor-pointer
-                             transition-all duration-150 hover:scale-110 bg-white text-black
-                             disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  className="border border-transparent rounded-sm px-4 py-1 cursor-pointer
+                             transition-all duration-150 hover:scale-105 bg-[var(--text-primary)] text-[var(--bg-primary)]
+                             disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
                   disabled={isLoading}
                 >
                   {isLoading ? "Creating..." : "Create"}
