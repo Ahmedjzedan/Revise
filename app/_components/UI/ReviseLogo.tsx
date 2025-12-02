@@ -3,7 +3,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import OpenBookIcon from "@/public/svgs/openbook.svg";
-import { motion } from "framer-motion";
 
 interface ReviseLogoProps {
   isAuthPage?: boolean;

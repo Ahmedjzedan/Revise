@@ -2,7 +2,6 @@
 import React from "react";
 import { Reorder, useDragControls } from "framer-motion";
 import MainContentElement from "./MainContentElement";
-import { LocalNode } from "@/app/_utils/LocalDataManager";
 
 interface NodeItem {
   id: number;
@@ -10,6 +9,8 @@ interface NodeItem {
   fullness: number | null;
   maxfullness: number | null;
   content?: string | null;
+  pinned?: boolean | null;
+  type?: string | null;
 }
 
 interface DraggableMainContentItemProps {
@@ -43,6 +44,8 @@ const DraggableMainContentItem: React.FC<DraggableMainContentItemProps> = ({
         onEdit={() => onEdit(node)}
         onComplete={onComplete}
         dragControls={controls}
+        pinned={node.pinned || false}
+        type={node.type as "bar" | "revision" || "bar"}
       />
     </Reorder.Item>
   );

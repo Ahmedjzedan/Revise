@@ -14,10 +14,11 @@ interface PageProps {
 
 export default async function Page({ params }: PageProps) {
   const { user, pageTitle } = await params;
+  const decodedPageTitle = decodeURIComponent(pageTitle);
   
   const [userName, pageId] = await Promise.all([
     getUserNameById(user),
-    getPageId(pageTitle, user)
+    getPageId(decodedPageTitle, user)
   ]);
 
   if (!pageId) {
@@ -26,10 +27,10 @@ export default async function Page({ params }: PageProps) {
 
   return (
     <>
-      <div className="row-start-1 row-span-2 h-full col-start-3 flex flex-col overflow-hidden">
+      <div className="row-start-1 row-span-1 h-full w-full col-start-1 md:row-start-1 md:row-span-2 md:col-start-3 flex flex-col overflow-hidden">
         <Suspense fallback={<div>Loading info...</div>}>
           <MainContentInfo
-            pageName={pageTitle}
+            pageName={decodedPageTitle}
             userName={userName || undefined}
           ></MainContentInfo>
         </Suspense>

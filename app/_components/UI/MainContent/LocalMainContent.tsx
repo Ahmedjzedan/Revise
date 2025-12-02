@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import MainContentElement from "./MainContentElement";
 import { LocalDataManager, LocalNode } from "@/app/_utils/LocalDataManager";
 import LocalCreateElementModal from "../modals/LocalCreateElementModal";
 import LocalEditElementModal from "../modals/LocalEditElementModal";

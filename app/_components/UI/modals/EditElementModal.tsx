@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { updateNodeAction, deleteNodeAction, addNodeAction } from "@/app/_utils/elementActions";
+import { updateNodeAction, deleteNodeAction, addNodeAction, togglePinAction } from "@/app/_utils/elementActions";
 import { toast } from "sonner";
 
 interface EditElementModalProps {
@@ -11,6 +11,8 @@ interface EditElementModalProps {
   initialContent: string;
   initialMaxFullness: number;
   initialFullness: number;
+  initialPinned?: boolean;
+  initialType?: "bar" | "revision";
   onClose: () => void;
   onSuccess: () => void;
 }
@@ -22,6 +24,8 @@ const EditElementModal: React.FC<EditElementModalProps> = ({
   initialContent,
   initialMaxFullness,
   initialFullness,
+  initialPinned = false,
+  initialType = "bar",
   onClose,
   onSuccess,
 }) => {
@@ -29,8 +33,16 @@ const EditElementModal: React.FC<EditElementModalProps> = ({
   const [content, setContent] = useState(initialContent);
   const [maxFullness, setMaxFullness] = useState(initialMaxFullness);
   const [fullness, setFullness] = useState(initialFullness);
+  const [isPinned, setIsPinned] = useState(initialPinned);
   const [isAddChildOpen, setIsAddChildOpen] = useState(false);
   const [childTitle, setChildTitle] = useState("");
+
+  const handlePin = async () => {
+    const newPinned = !isPinned;
+    setIsPinned(newPinned);
+    await togglePinAction(nodeId, newPinned);
+    onSuccess();
+  };
 
   const handleUpdate = async () => {
     await updateNodeAction(nodeId, { title, content, maxfullness: maxFullness, fullness });
@@ -41,26 +53,65 @@ const EditElementModal: React.FC<EditElementModalProps> = ({
   const handleAddChild = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!childTitle) return;
-    // We need to import addNodeAction here if not already imported? 
-    // It is imported in CreateElementModal, let's check imports.
-    // We need to add it to imports.
-    await addNodeAction(pageId, childTitle, 5, nodeId);
+    // Defaulting to type="revision" and maxFullness=1 for children as requested
+    await addNodeAction(pageId, childTitle, 1, nodeId, "revision");
     setChildTitle("");
     setIsAddChildOpen(false);
     onSuccess();
   };
 
   const handleDelete = async () => {
-    toast("Are you sure you want to delete this element?", {
-      action: {
-        label: "Delete",
-        onClick: async () => {
-          await deleteNodeAction(nodeId);
-          onSuccess();
-          onClose();
-        },
-      },
-    });
+    const dontShowAgain = localStorage.getItem("dontShowDeleteConfirm");
+    
+    if (dontShowAgain === "true") {
+      await deleteNodeAction(nodeId);
+      onSuccess();
+      onClose();
+      return;
+    }
+
+    toast.custom((t) => (
+      <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] p-4 rounded-xl shadow-lg w-full max-w-sm">
+        <h3 className="text-[var(--text-primary)] font-medium mb-2">Delete Element?</h3>
+        <p className="text-[var(--text-secondary)] text-sm mb-4">Are you sure you want to delete this element? This action cannot be undone.</p>
+        
+        <div className="flex items-center gap-2 mb-4">
+          <input 
+            type="checkbox" 
+            id="dont-show" 
+            className="w-4 h-4 rounded border-[var(--border-color)] bg-[var(--bg-primary)]"
+            onChange={(e) => {
+              if (e.target.checked) {
+                localStorage.setItem("dontShowDeleteConfirm", "true");
+              } else {
+                localStorage.removeItem("dontShowDeleteConfirm");
+              }
+            }}
+          />
+          <label htmlFor="dont-show" className="text-[var(--text-secondary)] text-sm cursor-pointer select-none">Don&apos;t show this again</label>
+        </div>
+
+        <div className="flex justify-end gap-2">
+          <button 
+            onClick={() => toast.dismiss(t)}
+            className="px-3 py-1.5 text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-sm"
+          >
+            Cancel
+          </button>
+          <button 
+            onClick={async () => {
+              toast.dismiss(t);
+              await deleteNodeAction(nodeId);
+              onSuccess();
+              onClose();
+            }}
+            className="px-3 py-1.5 bg-red-500/10 text-red-500 hover:bg-red-500/20 rounded-lg text-sm font-medium transition-colors"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    ));
   };
 
   return (
@@ -69,7 +120,7 @@ const EditElementModal: React.FC<EditElementModalProps> = ({
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.9 }}
-        className="bg-[var(--bg-secondary)] border border-[var(--border-color)] p-8 rounded-2xl w-[600px] max-w-full mx-4 shadow-2xl"
+        className="bg-[var(--bg-secondary)] border border-[var(--border-color)] p-8 rounded-2xl w-[600px] max-w-full mx-4 shadow-2xl max-h-[85vh] overflow-y-auto mt-10"
         onClick={(e) => e.stopPropagation()}
       >
         <h3 className="text-2xl font-light mb-6 text-[var(--text-primary)] tracking-wide">Edit Element</h3>
@@ -96,34 +147,38 @@ const EditElementModal: React.FC<EditElementModalProps> = ({
              />
           </div>
 
-          <div>
-            <label className="block text-[var(--text-secondary)] text-sm mb-2">Max Fullness</label>
-            <input
-              type="number"
-              min="1"
-              max="20"
-              value={maxFullness}
-              onChange={(e) => setMaxFullness(Number(e.target.value))}
-              className="w-full bg-[var(--bg-primary)] text-[var(--text-primary)] p-4 rounded-xl border border-[var(--border-color)] focus:border-[var(--text-primary)] outline-none transition-all text-lg"
-            />
-          </div>
-          
-          <div>
-            <label className="block text-[var(--text-secondary)] text-sm mb-2">Current Fullness</label>
-            <div className="flex items-center gap-4">
-              <input
-                type="range"
-                min="0"
-                max={maxFullness}
-                value={fullness}
-                onChange={(e) => {
-                   setFullness(Number(e.target.value));
-                }}
-                className="w-full h-2 bg-[var(--border-color)] rounded-lg appearance-none cursor-pointer accent-[var(--text-primary)]"
-              />
-              <span className="text-[var(--text-primary)] w-8">{fullness}</span>
-            </div>
-          </div>
+          {initialType === "revision" && (
+            <>
+              <div>
+                <label className="block text-[var(--text-secondary)] text-sm mb-2">Max Fullness</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="20"
+                  value={maxFullness}
+                  onChange={(e) => setMaxFullness(Number(e.target.value))}
+                  className="w-full bg-[var(--bg-primary)] text-[var(--text-primary)] p-4 rounded-xl border border-[var(--border-color)] focus:border-[var(--text-primary)] outline-none transition-all text-lg"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-[var(--text-secondary)] text-sm mb-2">Current Fullness</label>
+                <div className="flex items-center gap-4">
+                  <input
+                    type="range"
+                    min="0"
+                    max={maxFullness}
+                    value={fullness}
+                    onChange={(e) => {
+                       setFullness(Number(e.target.value));
+                    }}
+                    className="w-full h-2 bg-[var(--border-color)] rounded-lg appearance-none cursor-pointer accent-[var(--text-primary)]"
+                  />
+                  <span className="text-[var(--text-primary)] w-8">{fullness}</span>
+                </div>
+              </div>
+            </>
+          )}
 
           <div className="flex flex-col gap-3 mt-4">
              <button 
@@ -138,6 +193,17 @@ const EditElementModal: React.FC<EditElementModalProps> = ({
                className="w-full py-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] rounded-xl hover:bg-[var(--border-color)] transition-colors font-medium"
              >
                Add Child Element
+             </button>
+
+             <button
+               onClick={handlePin}
+               className={`w-full py-3 border rounded-xl transition-colors font-medium ${
+                 isPinned 
+                   ? "bg-yellow-500/10 border-yellow-500 text-yellow-500 hover:bg-yellow-500/20" 
+                   : "border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--text-primary)]"
+               }`}
+             >
+               {isPinned ? "Unpin Element" : "Pin Element"}
              </button>
 
              <button 

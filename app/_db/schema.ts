@@ -11,7 +11,7 @@ export const users = sqliteTable("users", {
 export const sessions = sqliteTable("sessions", {
   id: text("id").primaryKey(),
   userId: integer("user_id")
-    .references(() => users.id)
+    .references(() => users.id, { onDelete: "cascade" })
     .notNull(),
   expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
 });
@@ -20,7 +20,7 @@ export const pages = sqliteTable("pages", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   title: text("title").notNull(),
   userId: integer("user_id")
-    .references(() => users.id)
+    .references(() => users.id, { onDelete: "cascade" })
     .notNull(),
   position: integer("position").default(0),
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
@@ -33,7 +33,7 @@ export const nodes = sqliteTable("nodes", {
   fullness: integer("fullness").default(0),
   maxfullness: integer("maxfullness").default(5),
   pageId: integer("page_id")
-    .references(() => pages.id)
+    .references(() => pages.id, { onDelete: "cascade" })
     .notNull(),
   parentId: integer("parent_id"),
   position: integer("position").default(0),
@@ -41,6 +41,7 @@ export const nodes = sqliteTable("nodes", {
   content: text("content"),
   completed: integer("completed", { mode: "boolean" }).default(false),
   completedAt: integer("completed_at", { mode: "timestamp" }),
+  pinned: integer("pinned", { mode: "boolean" }).default(false),
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
   updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });

@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import SideBarElement from "./SideBarElement";
 import { LocalDataManager, LocalPage } from "@/app/_utils/LocalDataManager";
 import Link from "next/link";
 import { Reorder } from "framer-motion";

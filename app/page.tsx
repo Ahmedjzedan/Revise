@@ -10,16 +10,18 @@ export default function Page() {
 
   return (
     <>
-      <div className="col-start-1 row-start-1 h-full w-full z-0">
-        <LocalSideBar 
-          currentPageId={currentPageId} 
-          onPageSelect={setCurrentPageId} 
-        />
+      <div className="fixed inset-0 z-50 pointer-events-none md:static md:col-start-1 md:row-start-1 md:h-full md:w-full md:z-0 md:pointer-events-auto">
+        <div className="pointer-events-auto h-full w-full">
+          <LocalSideBar 
+            currentPageId={currentPageId} 
+            onPageSelect={setCurrentPageId} 
+          />
+        </div>
       </div>
 
       <MotionBorder />
 
-      <div className="row-start-1 row-span-2 h-full col-start-3 flex flex-col overflow-hidden">
+      <div className="col-start-1 row-start-1 row-span-1 h-full w-full md:row-start-1 md:row-span-2 md:col-start-3 flex flex-col overflow-hidden">
         <LocalMainContent pageId={currentPageId} />
       </div>
     </>

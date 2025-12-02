@@ -18,7 +18,7 @@ export default async function Page({ params }: PageProps) {
 
   return (
     <>
-      <div className="row-start-1 row-span-2 h-full col-start-3">
+      <div className="row-start-1 row-span-1 h-full w-full col-start-1 md:row-start-1 md:row-span-2 md:col-start-3">
         <MainContentInfo userName={userName || undefined} isInPage={false}></MainContentInfo>
       </div>
       

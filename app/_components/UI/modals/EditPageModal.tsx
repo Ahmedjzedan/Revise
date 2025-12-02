@@ -4,6 +4,7 @@ import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import { renamePage, deletePageAction } from "@/app/_utils/pageActions";
 import { toast } from "sonner";
+import { useRouter, usePathname } from "next/navigation";
 
 interface EditPageModalProps {
   pageId: number;
@@ -19,6 +20,8 @@ const EditPageModal: React.FC<EditPageModalProps> = ({
   onClose,
 }) => {
   const [title, setTitle] = useState(currentTitle);
+  const router = useRouter();
+  const pathname = usePathname();
 
   const handleRename = async () => {
     await renamePage(pageId, title, userId);
@@ -31,6 +34,17 @@ const EditPageModal: React.FC<EditPageModalProps> = ({
         label: "Delete",
         onClick: async () => {
           await deletePageAction(pageId, userId);
+          
+          // Check if we are currently on the page being deleted
+          // Pathname format: /[userId]/[pageTitle]
+          // We need to decode the URL component to match the title
+          const pathParts = pathname.split('/');
+          const currentPageTitle = pathParts[2] ? decodeURIComponent(pathParts[2]) : null;
+          
+          if (currentPageTitle === currentTitle) {
+             router.push(`/${userId}`);
+          }
+          
           onClose();
         },
       },

@@ -5,7 +5,7 @@ import { nodes } from "@/app/_db/schema";
 import { eq } from "drizzle-orm";
 import { revalidateTag } from "next/cache";
 
-export async function addNodeAction(pageId: number, title: string, maxFullness: number = 5, parentId?: number) {
+export async function addNodeAction(pageId: number, title: string, maxFullness: number = 5, parentId?: number, type: "bar" | "revision" = "bar") {
   try {
     await db.insert(nodes).values({
       pageId,
@@ -13,6 +13,7 @@ export async function addNodeAction(pageId: number, title: string, maxFullness: 
       maxfullness: maxFullness,
       fullness: 0,
       parentId,
+      type,
     });
     revalidateTag(`nodes-${pageId}`);
     return { success: true };
@@ -163,5 +164,22 @@ export async function toggleNodeCompletion(nodeId: number, completed: boolean) {
   } catch (error) {
     console.error("Error toggling node completion:", error);
     return { error: "Failed to toggle completion" };
+  }
+}
+
+export async function togglePinAction(nodeId: number, pinned: boolean) {
+  try {
+    const result = await db.update(nodes)
+      .set({ pinned })
+      .where(eq(nodes.id, nodeId))
+      .returning({ pageId: nodes.pageId });
+
+    if (result[0]) {
+      revalidateTag(`nodes-${result[0].pageId}`);
+    }
+    return { success: true };
+  } catch (error) {
+    console.error("Error toggling node pin:", error);
+    return { error: "Failed to toggle pin" };
   }
 }

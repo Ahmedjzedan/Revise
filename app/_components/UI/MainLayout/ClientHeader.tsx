@@ -1,8 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import Image from "next/image";
-import OpenBookIcon from "@/public/svgs/openbook.svg";
 import { motion } from "framer-motion";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
@@ -60,7 +57,7 @@ export default function ClientHeader({ userId: initialUserId }: ClientHeaderProp
       className={
         pathname === "/login" || pathname === "/signup"
           ? "absolute top-0 left-0 m-8 flex flex-row items-center gap-4 z-50 pointer-events-none"
-          : "relative flex flex-col justify-start items-center row-start-1 col-start-1 col-span-1 sticky top-0 z-50 mt-4 mb-8 pointer-events-none"
+          : "hidden md:flex relative flex-col justify-start items-center md:row-start-1 md:col-start-1 md:col-span-1 sticky top-0 z-50 mt-4 mb-8 pointer-events-none w-full md:w-auto"
       }
     >
       <motion.div

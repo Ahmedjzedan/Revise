@@ -1,8 +1,7 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Reorder, useDragControls } from "framer-motion";
 import SideBarElement from "./SideBarElement";
-import { LocalPage } from "@/app/_utils/LocalDataManager";
 
 interface PageItem {
   id: number;

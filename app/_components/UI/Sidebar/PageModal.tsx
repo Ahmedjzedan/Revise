@@ -74,7 +74,7 @@ const PageModal: React.FC<CreatePageModalProps> = ({ userId, pageTitle: _pageTit
           </motion.div>
 
           <motion.div
-            className="fixed inset-0 m-auto flex h-fit w-1/2 z-[150] items-start justify-center
+            className="fixed inset-0 m-auto flex h-fit w-[90%] md:w-1/2 z-[150] items-start justify-center
                        border-3 border-white rounded-lg bg-[#373737] p-5"
             variants={fadeInVariants}
             initial="hidden"

@@ -15,7 +15,7 @@ function LayoutContentWrapper({ children }: { children: React.ReactNode }) {
           ? ""
           : pathname === "/signup"
           ? ""
-          : "grid grid-rows-[1fr] grid-cols-[2fr_auto_8fr] w-full h-screen overflow-hidden"
+          : "grid grid-rows-[1fr] grid-cols-[1fr] md:grid-cols-[250px_auto_1fr] w-full h-screen overflow-hidden"
       }
     >
       {children}

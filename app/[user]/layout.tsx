@@ -32,7 +32,7 @@ export default async function Layout({
 
   return (
     <>
-      <div className="col-start-1 row-start-1 h-full w-full z-0 flex flex-col overflow-hidden">
+      <div className="col-start-1 row-start-1 h-full w-full z-40 flex flex-col overflow-hidden pointer-events-none">
         <SideBar userId={userIdParam} />
       </div>
       <MotionBorder />
