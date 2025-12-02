@@ -1,11 +1,9 @@
 "use client";
-import MainContentElement from "./MainContentElement";
 import { useEffect, useState } from "react";
 import { getNodes } from "@/app/_utils/dbHelpers";
 import { Node } from "@/app/_db/schema";
 import CreateElementModal from "../modals/CreateElementModal";
 import EditElementModal from "../modals/EditElementModal";
-import { motion } from "framer-motion";
 import { Reorder } from "framer-motion";
 import DraggableMainContentItem from "./DraggableMainContentItem";
 import { reorderNodesAction, toggleNodeCompletion } from "@/app/_utils/elementActions";
@@ -209,6 +207,7 @@ const MainContent: React.FC<MainContentProps> = ({ pageId }) => {
 
       {editingNode && (
         <EditElementModal
+          key={editingNode.id}
           nodeId={editingNode.id}
           pageId={Number(pageId)}
           initialTitle={editingNode.title}

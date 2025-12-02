@@ -2,6 +2,7 @@
 import React from "react";
 import { Reorder, useDragControls } from "framer-motion";
 import MainContentElement from "./MainContentElement";
+import ChildElement from "./ChildElement";
 
 interface NodeItem {
   id: number;
@@ -37,20 +38,36 @@ const DraggableMainContentItem: React.FC<DraggableMainContentItemProps> = ({
       dragControls={controls}
       className="relative"
     >
-      <MainContentElement
-        id={node.id.toString()}
-        title={node.title}
-        fillProp={node.fullness || 0}
-        maxFillProp={node.maxfullness || 5}
-        onUpdate={onUpdate}
-        onEdit={() => onEdit(node)}
-        onComplete={onComplete}
-        dragControls={controls}
-        pinned={node.pinned || false}
-        type={node.type as "bar" | "revision" || "bar"}
-        content={node.content || undefined}
-        isChild={isChild}
-      />
+      {isChild ? (
+        <ChildElement
+          id={node.id.toString()}
+          title={node.title}
+          fillProp={node.fullness || 0}
+          maxFillProp={node.maxfullness || 5}
+          onUpdate={onUpdate}
+          onEdit={() => onEdit(node)}
+          onComplete={onComplete}
+          dragControls={controls}
+          pinned={node.pinned || false}
+          type={node.type as "bar" | "revision" || "bar"}
+          content={node.content || undefined}
+        />
+      ) : (
+        <MainContentElement
+          id={node.id.toString()}
+          title={node.title}
+          fillProp={node.fullness || 0}
+          maxFillProp={node.maxfullness || 5}
+          onUpdate={onUpdate}
+          onEdit={() => onEdit(node)}
+          onComplete={onComplete}
+          dragControls={controls}
+          pinned={node.pinned || false}
+          type={node.type as "bar" | "revision" || "bar"}
+          content={node.content || undefined}
+          isChild={isChild}
+        />
+      )}
     </Reorder.Item>
   );
 };

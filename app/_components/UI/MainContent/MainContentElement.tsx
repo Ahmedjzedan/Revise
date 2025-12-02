@@ -41,7 +41,7 @@ const MainContentElement: React.FC<
   type = "bar",
   content,
 }) => {
-  const [maxFill] = useState(maxFillProp);
+  const maxFill = maxFillProp;
   const [fill, setFill] = useState(fillProp > maxFill ? maxFill : fillProp);
   const [isCompleted, setIsCompleted] = useState(false);
   const [showTimer, setShowTimer] = useState(false);
@@ -129,7 +129,7 @@ const MainContentElement: React.FC<
             <motion.div
               className={
                 `absolute inset-0 z-1 ` +
-                (isCompleted && !isChild ? "bg-green-500" : (isChild ? "bg-[var(--text-primary)]" : "group-hover:bg-[var(--text-secondary)] bg-[var(--bg-primary)]")) + " " +
+                (isCompleted && !isChild ? "bg-green-500" : (isChild ? "bg-black dark:bg-white" : "group-hover:bg-[var(--text-secondary)] bg-[var(--bg-primary)]")) + " " +
                 (fill === maxFill ? "rounded-xl" : "rounded-l-xl rounded-r-[0px]")
               }
               initial={{ width: 0 }}
