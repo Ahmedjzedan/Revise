@@ -7,6 +7,21 @@ import { revalidateTag } from "next/cache";
 
 export async function addNodeAction(pageId: number, title: string, maxFullness: number = 5, parentId?: number, type: "bar" | "revision" = "bar") {
   try {
+    // Calculate the next position
+    const existingNodes = await db.query.nodes.findMany({
+      where: (nodes, { eq, and, isNull }) => 
+        and(
+          eq(nodes.pageId, pageId),
+          parentId ? eq(nodes.parentId, parentId) : isNull(nodes.parentId)
+        ),
+      columns: {
+        position: true,
+      },
+    });
+
+    const maxPosition = existingNodes.reduce((max, node) => Math.max(max, node.position || 0), -1);
+    const newPosition = maxPosition + 1;
+
     const result = await db.insert(nodes).values({
       pageId,
       title,
@@ -14,6 +29,7 @@ export async function addNodeAction(pageId: number, title: string, maxFullness: 
       fullness: 0,
       parentId,
       type,
+      position: newPosition,
     }).returning();
     revalidateTag(`nodes-${pageId}`);
     return { success: true, node: result[0] };

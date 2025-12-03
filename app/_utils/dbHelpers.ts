@@ -3,7 +3,8 @@
 
 import { db } from "../_db/index";
 import { pages, nodes, Page, NewPage } from "../_db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, asc } from "drizzle-orm";
+import { revalidateTag, revalidatePath, unstable_cache } from "next/cache";
 
 /**
  * Fetches all pages for a user.
@@ -66,6 +67,10 @@ export async function addPage(
     ...pageData,
     userId: numericUserId,
   });
+  
+  revalidateTag(`page-id-${userId}-${pageData.title}`);
+  revalidatePath(`/${userId}`);
+
   return result.lastInsertRowid;
 }
 
@@ -100,8 +105,6 @@ export async function checkPageExists(
   }
 }
 
-import { unstable_cache } from "next/cache";
-
 /**
  * Gets a page ID by title and user ID.
  * @param pageTitle The title of the page.
@@ -112,31 +115,25 @@ export async function getPageId(
   pageTitle: string,
   userId: string
 ): Promise<number | null> {
-  return unstable_cache(
-    async () => {
-      try {
-        const numericUserId = parseInt(userId, 10);
-        if (isNaN(numericUserId)) {
-            return null;
-        }
-        const page = await db.query.pages.findFirst({
-          where: and(eq(pages.title, pageTitle), eq(pages.userId, numericUserId)),
-          columns: {
-            id: true,
-          },
-        });
-        return page ? page.id : null;
-      } catch (error) {
-        console.error(
-          `Error getting page ID for "${pageTitle}" and user ${userId}:`,
-          error
-        );
+  try {
+    const numericUserId = parseInt(userId, 10);
+    if (isNaN(numericUserId)) {
         return null;
-      }
-    },
-    [`page-id-${userId}-${pageTitle}`],
-    { tags: [`page-id-${userId}-${pageTitle}`] }
-  )();
+    }
+    const page = await db.query.pages.findFirst({
+      where: and(eq(pages.title, pageTitle), eq(pages.userId, numericUserId)),
+      columns: {
+        id: true,
+      },
+    });
+    return page ? page.id : null;
+  } catch (error) {
+    console.error(
+      `Error getting page ID for "${pageTitle}" and user ${userId}:`,
+      error
+    );
+    return null;
+  }
 }
 
 /**
@@ -148,27 +145,21 @@ export async function getNodes(pageId: number | string) {
   const numericPageId = Number(pageId);
   if (isNaN(numericPageId)) {
     console.log("Invalid page ID provided:", pageId);
-    // throw new Error("Invalid page ID provided: "); // Don't throw inside cache, return null or empty
     return null;
   }
 
-  return unstable_cache(
-    async () => {
-      try {
-        const pageNodes = await db
-          .select()
-          .from(nodes)
-          .where(eq(nodes.pageId, numericPageId));
+  try {
+    const pageNodes = await db
+      .select()
+      .from(nodes)
+      .where(eq(nodes.pageId, numericPageId))
+      .orderBy(asc(nodes.position));
 
-        return pageNodes;
-      } catch (error) {
-        console.error("Error fetching nodes:", error);
-        return null;
-      }
-    },
-    [`nodes-${numericPageId}`],
-    { tags: [`nodes-${numericPageId}`] }
-  )();
+    return pageNodes;
+  } catch (error) {
+    console.error("Error fetching nodes:", error);
+    return null;
+  }
 }
 
 /**

@@ -20,6 +20,12 @@ interface DraggableMainContentItemProps {
   onEdit: (node: NodeItem) => void;
   onComplete: (nodeId: string) => void;
   isChild?: boolean;
+  children?: React.ReactNode;
+  className?: string;
+  fullness?: number;
+  maxfullness?: number;
+  isExpanded?: boolean;
+  onToggleExpand?: () => void;
 }
 
 const DraggableMainContentItem: React.FC<DraggableMainContentItemProps> = ({
@@ -28,6 +34,12 @@ const DraggableMainContentItem: React.FC<DraggableMainContentItemProps> = ({
   onEdit,
   onComplete,
   isChild = false,
+  children,
+  className = "",
+  fullness,
+  maxfullness,
+  isExpanded,
+  onToggleExpand,
 }) => {
   const controls = useDragControls();
 
@@ -36,14 +48,16 @@ const DraggableMainContentItem: React.FC<DraggableMainContentItemProps> = ({
       value={node}
       dragListener={false}
       dragControls={controls}
-      className="relative"
+      className={`relative ${className}`}
+      whileDrag={{ scale: 1.02, zIndex: 50 }}
+      dragMomentum={false}
     >
       {isChild ? (
         <ChildElement
           id={node.id.toString()}
           title={node.title}
-          fillProp={node.fullness || 0}
-          maxFillProp={node.maxfullness || 5}
+          fillProp={fullness !== undefined ? fullness : (node.fullness || 0)}
+          maxFillProp={maxfullness !== undefined ? maxfullness : (node.maxfullness || 5)}
           onUpdate={onUpdate}
           onEdit={() => onEdit(node)}
           onComplete={onComplete}
@@ -56,8 +70,8 @@ const DraggableMainContentItem: React.FC<DraggableMainContentItemProps> = ({
         <MainContentElement
           id={node.id.toString()}
           title={node.title}
-          fillProp={node.fullness || 0}
-          maxFillProp={node.maxfullness || 5}
+          fillProp={fullness !== undefined ? fullness : (node.fullness || 0)}
+          maxFillProp={maxfullness !== undefined ? maxfullness : (node.maxfullness || 5)}
           onUpdate={onUpdate}
           onEdit={() => onEdit(node)}
           onComplete={onComplete}
@@ -66,8 +80,11 @@ const DraggableMainContentItem: React.FC<DraggableMainContentItemProps> = ({
           type={node.type as "bar" | "revision" || "bar"}
           content={node.content || undefined}
           isChild={isChild}
+          isExpanded={isExpanded}
+          onToggleExpand={onToggleExpand}
         />
       )}
+      {children}
     </Reorder.Item>
   );
 };

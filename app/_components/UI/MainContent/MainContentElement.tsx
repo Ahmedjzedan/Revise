@@ -21,6 +21,8 @@ interface SideBarElementProps {
   pinned?: boolean;
   type?: "bar" | "revision";
   content?: string;
+  isExpanded?: boolean;
+  onToggleExpand?: () => void;
 }
 
 const MainContentElement: React.FC<
@@ -40,6 +42,8 @@ const MainContentElement: React.FC<
   pinned = false,
   type = "bar",
   content,
+  isExpanded,
+  onToggleExpand,
 }) => {
   const maxFill = maxFillProp;
   const [fill, setFill] = useState(fillProp > maxFill ? maxFill : fillProp);
@@ -106,6 +110,10 @@ const MainContentElement: React.FC<
           (isChild ? "mb-2 last:mb-0" : "")
         }
         onClick={() => {
+          if (onToggleExpand) {
+            onToggleExpand();
+            return;
+          }
           if (isRevision && fill < maxFill) {
             const newFill = fill + 1;
             setFill(newFill);
@@ -184,6 +192,14 @@ const MainContentElement: React.FC<
             {fill} / {maxFill}
           </span>
         )}
+        
+        {onToggleExpand && (
+          <div className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-300 ${isExpanded ? "rotate-90" : ""}`}>
+             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--text-secondary)]">
+               <polyline points="9 18 15 12 9 6"></polyline>
+             </svg>
+          </div>
+        )}
       </button>
       
       <div className="absolute -right-16 top-1/2 -translate-y-1/2 md:opacity-0 md:group-hover/item:opacity-100 transition-opacity duration-300 flex md:block gap-2 md:gap-0 mt-2 md:mt-0 relative md:absolute right-0 md:-right-16 top-auto md:top-1/2 translate-y-0 md:-translate-y-1/2 justify-end w-full md:w-auto pr-2 md:pr-0">
@@ -201,7 +217,10 @@ const MainContentElement: React.FC<
         
         <div 
           className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] p-2 cursor-grab active:cursor-grabbing"
-          onPointerDown={(e) => dragControls?.start(e)}
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            dragControls?.start(e);
+          }}
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="9" cy="12" r="1"></circle>
