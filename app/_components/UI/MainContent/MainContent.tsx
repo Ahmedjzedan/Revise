@@ -147,6 +147,7 @@ const MainContent: React.FC<MainContentProps> = ({ pageId }) => {
                 onComplete={(id) => handleNodeCompletion(id)}
                 isExpanded={isExpanded}
                 onToggleExpand={() => toggleExpansion(node.id)}
+                hasChildren={hasChildren}
               >
                 <AnimatePresence>
                   {isExpanded && (

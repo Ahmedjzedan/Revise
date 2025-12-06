@@ -1,7 +1,9 @@
 "use client";
 import React from "react";
 import { Reorder, useDragControls } from "framer-motion";
-import MainContentElement from "./MainContentElement";
+import ParentElement from "./ParentElement";
+import NormalElement from "./NormalElement";
+import NormalTask from "./NormalTask";
 import ChildElement from "./ChildElement";
 
 interface NodeItem {
@@ -20,6 +22,7 @@ interface DraggableMainContentItemProps {
   onEdit: (node: NodeItem) => void;
   onComplete: (nodeId: string) => void;
   isChild?: boolean;
+  hasChildren?: boolean;
   children?: React.ReactNode;
   className?: string;
   fullness?: number;
@@ -34,6 +37,7 @@ const DraggableMainContentItem: React.FC<DraggableMainContentItemProps> = ({
   onEdit,
   onComplete,
   isChild = false,
+  hasChildren = false,
   children,
   className = "",
   fullness,
@@ -43,16 +47,9 @@ const DraggableMainContentItem: React.FC<DraggableMainContentItemProps> = ({
 }) => {
   const controls = useDragControls();
 
-  return (
-    <Reorder.Item
-      value={node}
-      dragListener={false}
-      dragControls={controls}
-      className={`relative ${className}`}
-      whileDrag={{ scale: 1.02, zIndex: 50 }}
-      dragMomentum={false}
-    >
-      {isChild ? (
+  const renderContent = () => {
+    if (isChild) {
+      return (
         <ChildElement
           id={node.id.toString()}
           title={node.title}
@@ -66,8 +63,29 @@ const DraggableMainContentItem: React.FC<DraggableMainContentItemProps> = ({
           type={node.type as "bar" | "revision" || "bar"}
           content={node.content || undefined}
         />
-      ) : (
-        <MainContentElement
+      );
+    }
+
+    if (hasChildren) {
+      return (
+        <ParentElement
+          id={node.id.toString()}
+          title={node.title}
+          fillProp={fullness !== undefined ? fullness : (node.fullness || 0)}
+          maxFillProp={maxfullness !== undefined ? maxfullness : (node.maxfullness || 5)}
+          onEdit={() => onEdit(node)}
+          dragControls={controls}
+          pinned={node.pinned || false}
+          isExpanded={isExpanded}
+          onToggleExpand={onToggleExpand}
+          content={node.content || undefined}
+        />
+      );
+    }
+
+    if (node.type === "revision") {
+      return (
+        <NormalElement
           id={node.id.toString()}
           title={node.title}
           fillProp={fullness !== undefined ? fullness : (node.fullness || 0)}
@@ -77,13 +95,35 @@ const DraggableMainContentItem: React.FC<DraggableMainContentItemProps> = ({
           onComplete={onComplete}
           dragControls={controls}
           pinned={node.pinned || false}
-          type={node.type as "bar" | "revision" || "bar"}
           content={node.content || undefined}
-          isChild={isChild}
-          isExpanded={isExpanded}
-          onToggleExpand={onToggleExpand}
         />
-      )}
+      );
+    }
+
+    // Default to NormalTask (type === "bar" or undefined)
+    return (
+      <NormalTask
+        id={node.id.toString()}
+        title={node.title}
+        onEdit={() => onEdit(node)}
+        onComplete={onComplete}
+        dragControls={controls}
+        pinned={node.pinned || false}
+        content={node.content || undefined}
+      />
+    );
+  };
+
+  return (
+    <Reorder.Item
+      value={node}
+      dragListener={false}
+      dragControls={controls}
+      className={`relative ${className}`}
+      whileDrag={{ scale: 1.02, zIndex: 50 }}
+      dragMomentum={false}
+    >
+      {renderContent()}
       {children}
     </Reorder.Item>
   );
