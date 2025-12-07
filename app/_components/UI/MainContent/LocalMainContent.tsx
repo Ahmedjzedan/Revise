@@ -61,12 +61,36 @@ const LocalMainContent: React.FC<LocalMainContentProps> = ({ pageId }) => {
     LocalDataManager.reorderNodes(newParentOrder);
   };
 
-  const handleChildReorder = (parentId: number, newChildOrder: LocalNode[]) => {
+  const handleMoveNode = (nodeId: number, direction: "up" | "down") => {
     setNodes(prevNodes => {
-      const otherNodes = prevNodes.filter(n => n.parentId !== parentId);
-      return [...otherNodes, ...newChildOrder];
+      const node = prevNodes.find(n => n.id === nodeId);
+      if (!node || !node.parentId) return prevNodes;
+
+      const siblings = prevNodes.filter(n => n.parentId === node.parentId).sort((a, b) => (a.position || 0) - (b.position || 0));
+      const index = siblings.findIndex(n => n.id === nodeId);
+      
+      if (index === -1) return prevNodes;
+      if (direction === "up" && index === 0) return prevNodes;
+      if (direction === "down" && index === siblings.length - 1) return prevNodes;
+
+      const swapIndex = direction === "up" ? index - 1 : index + 1;
+      const swapNode = siblings[swapIndex];
+
+      // Create new array with swapped positions
+      const newSiblings = [...siblings];
+      newSiblings[index] = swapNode;
+      newSiblings[swapIndex] = node;
+
+      // Update positions in the new siblings array
+      const updatedSiblings = newSiblings.map((n, i) => ({ ...n, position: i }));
+      
+      // Update local storage
+      LocalDataManager.reorderNodes(updatedSiblings);
+
+      // Return new state
+      const otherNodes = prevNodes.filter(n => n.parentId !== node.parentId);
+      return [...otherNodes, ...updatedSiblings];
     });
-    LocalDataManager.reorderNodes(newChildOrder);
   };
 
   const handleNodeCompletion = (nodeId: string) => {
@@ -112,6 +136,7 @@ const LocalMainContent: React.FC<LocalMainContentProps> = ({ pageId }) => {
                 onComplete={handleNodeCompletion}
                 isExpanded={isExpanded}
                 onToggleExpand={() => toggleExpansion(node.id)}
+                hasChildren={hasChildren}
               >
               {/* Render children only if expanded */}
               <AnimatePresence>
@@ -123,7 +148,7 @@ const LocalMainContent: React.FC<LocalMainContentProps> = ({ pageId }) => {
                     transition={{ duration: 0.3, ease: "easeInOut" }}
                     className="overflow-hidden"
                   >
-                    <Reorder.Group axis="y" values={children} onReorder={(newOrder) => handleChildReorder(node.id, newOrder)}>
+                    <div className="flex flex-col">
                       {children.map(child => (
                          <DraggableMainContentItem
                           key={child.id}
@@ -133,9 +158,11 @@ const LocalMainContent: React.FC<LocalMainContentProps> = ({ pageId }) => {
                           onComplete={handleNodeCompletion}
                           isChild={true}
                           className="ml-10"
+                          onMoveUp={() => handleMoveNode(child.id, "up")}
+                          onMoveDown={() => handleMoveNode(child.id, "down")}
                         />
                       ))}
-                    </Reorder.Group>
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>

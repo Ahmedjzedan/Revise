@@ -17,6 +17,8 @@ interface ChildElementProps {
   pinned?: boolean;
   type?: "bar" | "revision";
   content?: string;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
 }
 
 const ChildElement: React.FC<ChildElementProps> = ({
@@ -31,6 +33,8 @@ const ChildElement: React.FC<ChildElementProps> = ({
   pinned = false,
   type = "revision", // Children are usually revision type (fillable)
   content,
+  onMoveUp,
+  onMoveDown,
 }) => {
   // Use props directly to avoid stale state issues
   const maxFill = maxFillProp;
@@ -169,21 +173,29 @@ const ChildElement: React.FC<ChildElementProps> = ({
           </svg>
         </button>
         
-        <div 
-          className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] p-2 cursor-grab active:cursor-grabbing"
-          onPointerDown={(e) => {
-            e.stopPropagation();
-            dragControls?.start(e);
-          }}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="9" cy="12" r="1"></circle>
-            <circle cx="9" cy="5" r="1"></circle>
-            <circle cx="9" cy="19" r="1"></circle>
-            <circle cx="15" cy="12" r="1"></circle>
-            <circle cx="15" cy="5" r="1"></circle>
-            <circle cx="15" cy="19" r="1"></circle>
-          </svg>
+        <div className="flex flex-col">
+          <button 
+            className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] p-1"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (onMoveUp) onMoveUp();
+            }}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="18 15 12 9 6 15"></polyline>
+            </svg>
+          </button>
+          <button 
+            className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] p-1"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (onMoveDown) onMoveDown();
+            }}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
         </div>
       </div>
     </div>

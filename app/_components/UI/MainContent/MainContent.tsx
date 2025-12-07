@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { getNodes } from "@/app/_utils/dbHelpers";
 import { Node } from "@/app/_db/schema";
 import CreateElementModal from "../modals/CreateElementModal";
@@ -40,6 +40,30 @@ const MainContent: React.FC<MainContentProps> = ({ pageId }) => {
     );
   };
 
+  const pendingUpdatesRef = useRef<Record<number, number>>({});
+  const flushTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const queueUpdate = (updates: {id: number, position: number}[]) => {
+    updates.forEach(u => {
+      pendingUpdatesRef.current[u.id] = u.position;
+    });
+
+    if (flushTimeoutRef.current) {
+      clearTimeout(flushTimeoutRef.current);
+    }
+
+    flushTimeoutRef.current = setTimeout(() => {
+      const payload = Object.entries(pendingUpdatesRef.current).map(([id, pos]) => ({
+        id: Number(id),
+        position: Number(pos)
+      }));
+      if (payload.length > 0) {
+        reorderNodesAction(payload);
+        pendingUpdatesRef.current = {};
+      }
+    }, 5000);
+  };
+
   const handleParentReorder = (newParentOrder: Node[]) => {
     setNodes((prevNodes) => {
       const activeParentIds = new Set(newParentOrder.map(n => n.id));
@@ -52,20 +76,40 @@ const MainContent: React.FC<MainContentProps> = ({ pageId }) => {
       id: node.id,
       position: index,
     }));
-    reorderNodesAction(updates);
+    queueUpdate(updates);
   };
 
-  const handleChildReorder = (parentId: number, newChildOrder: Node[]) => {
+  const handleMoveNode = (nodeId: number, direction: "up" | "down") => {
     setNodes(prevNodes => {
-      const otherNodes = prevNodes.filter(n => n.parentId !== parentId);
-      return [...otherNodes, ...newChildOrder];
-    });
+      const node = prevNodes.find(n => n.id === nodeId);
+      if (!node || !node.parentId) return prevNodes;
 
-    const updates = newChildOrder.map((node, index) => ({
-      id: node.id,
-      position: index,
-    }));
-    reorderNodesAction(updates);
+      const siblings = prevNodes.filter(n => n.parentId === node.parentId).sort((a, b) => (a.position || 0) - (b.position || 0));
+      const index = siblings.findIndex(n => n.id === nodeId);
+      
+      if (index === -1) return prevNodes;
+      if (direction === "up" && index === 0) return prevNodes;
+      if (direction === "down" && index === siblings.length - 1) return prevNodes;
+
+      const swapIndex = direction === "up" ? index - 1 : index + 1;
+      const swapNode = siblings[swapIndex];
+
+      // Create new array with swapped positions
+      const newSiblings = [...siblings];
+      newSiblings[index] = swapNode;
+      newSiblings[swapIndex] = node;
+
+      // Update positions in the new siblings array
+      const updatedSiblings = newSiblings.map((n, i) => ({ ...n, position: i }));
+      
+      // Queue update for server
+      const updates = updatedSiblings.map(n => ({ id: n.id, position: n.position || 0 }));
+      queueUpdate(updates);
+
+      // Return new state
+      const otherNodes = prevNodes.filter(n => n.parentId !== node.parentId);
+      return [...otherNodes, ...updatedSiblings];
+    });
   };
 
   const handleNodeCompletion = async (nodeId: string) => {
@@ -158,8 +202,8 @@ const MainContent: React.FC<MainContentProps> = ({ pageId }) => {
                       transition={{ duration: 0.3, ease: "easeInOut" }}
                       className="overflow-hidden"
                     >
-                      <Reorder.Group axis="y" values={children} onReorder={(newOrder) => handleChildReorder(node.id, newOrder)}>
-                        {children.map(child => (
+                      <div className="flex flex-col">
+                        {children.map((child, index) => (
                            <DraggableMainContentItem
                             key={child.id}
                             node={{...child, content: child.content || undefined}}
@@ -168,9 +212,11 @@ const MainContent: React.FC<MainContentProps> = ({ pageId }) => {
                             onComplete={(childId) => handleNodeCompletion(childId)}
                             isChild={true}
                             className="ml-10"
+                            onMoveUp={() => handleMoveNode(child.id, "up")}
+                            onMoveDown={() => handleMoveNode(child.id, "down")}
                           />
                         ))}
-                      </Reorder.Group>
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>

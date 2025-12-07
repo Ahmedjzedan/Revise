@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { Reorder, useDragControls } from "framer-motion";
+import { Reorder, useDragControls, motion } from "framer-motion";
 import ParentElement from "./ParentElement";
 import NormalElement from "./NormalElement";
 import NormalTask from "./NormalTask";
@@ -29,6 +29,8 @@ interface DraggableMainContentItemProps {
   maxfullness?: number;
   isExpanded?: boolean;
   onToggleExpand?: () => void;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
 }
 
 const DraggableMainContentItem: React.FC<DraggableMainContentItemProps> = ({
@@ -44,6 +46,8 @@ const DraggableMainContentItem: React.FC<DraggableMainContentItemProps> = ({
   maxfullness,
   isExpanded,
   onToggleExpand,
+  onMoveUp,
+  onMoveDown,
 }) => {
   const controls = useDragControls();
 
@@ -62,6 +66,8 @@ const DraggableMainContentItem: React.FC<DraggableMainContentItemProps> = ({
           pinned={node.pinned || false}
           type={node.type as "bar" | "revision" || "bar"}
           content={node.content || undefined}
+          onMoveUp={onMoveUp}
+          onMoveDown={onMoveDown}
         />
       );
     }
@@ -113,6 +119,21 @@ const DraggableMainContentItem: React.FC<DraggableMainContentItemProps> = ({
       />
     );
   };
+
+  if (isChild) {
+    return (
+      <motion.div
+        layout
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -10 }}
+        className={`relative ${className}`}
+      >
+        {renderContent()}
+        {children}
+      </motion.div>
+    );
+  }
 
   return (
     <Reorder.Item
