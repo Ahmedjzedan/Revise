@@ -16,13 +16,20 @@ const LocalCreateElementModal: React.FC<LocalCreateElementModalProps> = ({
 }) => {
   const [title, setTitle] = useState("");
   const [maxFullness, setMaxFullness] = useState(5);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title) return;
-    LocalDataManager.addNode(pageId, title, maxFullness);
-    onSuccess();
-    onClose();
+    if (!title || isSubmitting) return;
+    
+    setIsSubmitting(true);
+    try {
+      LocalDataManager.addNode(pageId, title, maxFullness);
+      onSuccess();
+      onClose();
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -65,15 +72,17 @@ const LocalCreateElementModal: React.FC<LocalCreateElementModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-3 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors rounded-xl hover:bg-[var(--bg-primary)]"
+              disabled={isSubmitting}
+              className="px-6 py-3 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors rounded-xl hover:bg-[var(--bg-primary)] disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-8 py-3 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-xl hover:opacity-90 transition-colors font-medium"
+              disabled={isSubmitting}
+              className="px-8 py-3 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-xl hover:opacity-90 transition-colors font-medium disabled:opacity-50"
             >
-              Create
+              {isSubmitting ? "Creating..." : "Create"}
             </button>
           </div>
         </form>

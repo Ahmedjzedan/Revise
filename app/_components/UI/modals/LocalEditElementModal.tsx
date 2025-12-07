@@ -31,30 +31,49 @@ const LocalEditElementModal: React.FC<LocalEditElementModalProps> = ({
   const [fullness, setFullness] = useState(initialFullness);
   const [isAddChildOpen, setIsAddChildOpen] = useState(false);
   const [childTitle, setChildTitle] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleUpdate = () => {
-    LocalDataManager.updateNode(nodeId, { title, content, maxfullness: maxFullness, fullness });
-    onSuccess();
-    onClose();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      LocalDataManager.updateNode(nodeId, { title, content, maxfullness: maxFullness, fullness });
+      onSuccess();
+      onClose();
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleAddChild = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!childTitle) return;
-    LocalDataManager.addNode(pageId, childTitle, 5, nodeId);
-    setChildTitle("");
-    setIsAddChildOpen(false);
-    onSuccess();
+    if (!childTitle || isSubmitting) return;
+    
+    setIsSubmitting(true);
+    try {
+      LocalDataManager.addNode(pageId, childTitle, 5, nodeId);
+      setChildTitle("");
+      setIsAddChildOpen(false);
+      onSuccess();
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleDelete = () => {
+    if (isSubmitting) return;
     toast("Are you sure you want to delete this element?", {
       action: {
         label: "Delete",
         onClick: () => {
-          LocalDataManager.deleteNode(nodeId);
-          onSuccess();
-          onClose();
+          setIsSubmitting(true);
+          try {
+            LocalDataManager.deleteNode(nodeId);
+            onSuccess();
+            onClose();
+          } finally {
+            setIsSubmitting(false);
+          }
         },
       },
     });
@@ -125,21 +144,24 @@ const LocalEditElementModal: React.FC<LocalEditElementModalProps> = ({
           <div className="flex flex-col gap-3 mt-4">
              <button 
                onClick={handleUpdate}
-               className="w-full py-3 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-xl hover:opacity-90 transition-colors font-medium"
+               disabled={isSubmitting}
+               className="w-full py-3 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-xl hover:opacity-90 transition-colors font-medium flex items-center justify-center gap-2 disabled:opacity-50"
              >
                Save Changes
              </button>
              
              <button
                onClick={() => setIsAddChildOpen(true)}
-               className="w-full py-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] rounded-xl hover:bg-[var(--border-color)] transition-colors font-medium"
+               disabled={isSubmitting}
+               className="w-full py-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] rounded-xl hover:bg-[var(--border-color)] transition-colors font-medium disabled:opacity-50"
              >
                Add Child Element
              </button>
 
              <button 
                onClick={handleDelete}
-               className="w-full py-3 border border-red-500 text-red-500 rounded-xl hover:bg-red-500/10 transition-colors"
+               disabled={isSubmitting}
+               className="w-full py-3 border border-red-500 text-red-500 rounded-xl hover:bg-red-500/10 transition-colors disabled:opacity-50"
              >
                Delete Element
              </button>
@@ -160,8 +182,8 @@ const LocalEditElementModal: React.FC<LocalEditElementModalProps> = ({
                     className="w-full bg-[var(--bg-primary)] text-[var(--text-primary)] p-2 rounded mb-4 border border-transparent focus:border-[var(--text-primary)] outline-none"
                   />
                   <div className="flex justify-end gap-2">
-                    <button type="button" onClick={() => setIsAddChildOpen(false)} className="px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)]">Cancel</button>
-                    <button type="submit" className="px-4 py-2 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded hover:opacity-90">Add</button>
+                    <button type="button" onClick={() => setIsAddChildOpen(false)} className="px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)]" disabled={isSubmitting}>Cancel</button>
+                    <button type="submit" className="px-4 py-2 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded hover:opacity-90 disabled:opacity-50" disabled={isSubmitting}>Add</button>
                   </div>
                 </form>
              </div>

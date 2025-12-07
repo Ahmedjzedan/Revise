@@ -36,24 +36,38 @@ const EditElementModal: React.FC<EditElementModalProps> = ({
   const [isPinned, setIsPinned] = useState(initialPinned);
   const [isAddChildOpen, setIsAddChildOpen] = useState(false);
   const [childTitle, setChildTitle] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handlePin = async () => {
-    const newPinned = !isPinned;
-    setIsPinned(newPinned);
-    await togglePinAction(nodeId, newPinned);
-    onSuccess();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      const newPinned = !isPinned;
+      setIsPinned(newPinned);
+      await togglePinAction(nodeId, newPinned);
+      onSuccess();
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleUpdate = async () => {
-    await updateNodeAction(nodeId, { title, content, maxfullness: maxFullness, fullness });
-    onSuccess();
-    onClose();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      await updateNodeAction(nodeId, { title, content, maxfullness: maxFullness, fullness });
+      onSuccess();
+      onClose();
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleAddChild = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!childTitle) return;
+    if (!childTitle || isSubmitting) return;
     
+    setIsSubmitting(true);
     // Inherit parent type
     const childType = initialType === "bar" ? "bar" : "revision";
     const childMaxFullness = initialType === "bar" ? 0 : 1;
@@ -72,6 +86,7 @@ const EditElementModal: React.FC<EditElementModalProps> = ({
     } finally {
       setChildTitle("");
       setIsAddChildOpen(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -79,9 +94,15 @@ const EditElementModal: React.FC<EditElementModalProps> = ({
     const dontShowAgain = localStorage.getItem("dontShowDeleteConfirm");
     
     if (dontShowAgain === "true") {
-      await deleteNodeAction(nodeId);
-      onSuccess();
-      onClose();
+      if (isSubmitting) return;
+      setIsSubmitting(true);
+      try {
+        await deleteNodeAction(nodeId);
+        onSuccess();
+        onClose();
+      } finally {
+        setIsSubmitting(false);
+      }
       return;
     }
 
@@ -110,17 +131,25 @@ const EditElementModal: React.FC<EditElementModalProps> = ({
           <button 
             onClick={() => toast.dismiss(t)}
             className="px-3 py-1.5 text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-sm"
+            disabled={isSubmitting}
           >
             Cancel
           </button>
           <button 
             onClick={async () => {
-              toast.dismiss(t);
-              await deleteNodeAction(nodeId);
-              onSuccess();
-              onClose();
+              if (isSubmitting) return;
+              setIsSubmitting(true);
+              try {
+                toast.dismiss(t);
+                await deleteNodeAction(nodeId);
+                onSuccess();
+                onClose();
+              } finally {
+                setIsSubmitting(false);
+              }
             }}
-            className="px-3 py-1.5 bg-red-500/10 text-red-500 hover:bg-red-500/20 rounded-lg text-sm font-medium transition-colors"
+            className="px-3 py-1.5 bg-red-500/10 text-red-500 hover:bg-red-500/20 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+            disabled={isSubmitting}
           >
             Delete
           </button>
@@ -198,16 +227,18 @@ const EditElementModal: React.FC<EditElementModalProps> = ({
           <div className="flex flex-col gap-3 mt-4">
              <button 
                onClick={handleUpdate}
-               className="w-full py-3 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-xl hover:opacity-90 transition-colors font-medium flex items-center justify-center gap-2"
+               disabled={isSubmitting}
+               className="w-full py-3 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-xl hover:opacity-90 transition-colors font-medium flex items-center justify-center gap-2 disabled:opacity-50"
              >
                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-               Save Changes
+               {isSubmitting ? "Saving..." : "Save Changes"}
              </button>
              
              <div className="grid grid-cols-3 gap-3">
                <button
                  onClick={() => setIsAddChildOpen(true)}
-                 className="flex flex-col items-center justify-center gap-1 py-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] rounded-xl hover:bg-[var(--border-color)] transition-colors text-sm font-medium"
+                 disabled={isSubmitting}
+                 className="flex flex-col items-center justify-center gap-1 py-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] rounded-xl hover:bg-[var(--border-color)] transition-colors text-sm font-medium disabled:opacity-50"
                  title="Add Child"
                >
                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
@@ -216,7 +247,8 @@ const EditElementModal: React.FC<EditElementModalProps> = ({
 
                <button
                  onClick={handlePin}
-                 className={`flex flex-col items-center justify-center gap-1 py-3 border rounded-xl transition-colors text-sm font-medium ${
+                 disabled={isSubmitting}
+                 className={`flex flex-col items-center justify-center gap-1 py-3 border rounded-xl transition-colors text-sm font-medium disabled:opacity-50 ${
                    isPinned 
                      ? "bg-yellow-500/10 border-yellow-500 text-yellow-500 hover:bg-yellow-500/20" 
                      : "border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--text-primary)]"
@@ -229,7 +261,8 @@ const EditElementModal: React.FC<EditElementModalProps> = ({
 
                <button 
                  onClick={handleDelete}
-                 className="flex flex-col items-center justify-center gap-1 py-3 border border-red-500 text-red-500 rounded-xl hover:bg-red-500/10 transition-colors text-sm font-medium"
+                 disabled={isSubmitting}
+                 className="flex flex-col items-center justify-center gap-1 py-3 border border-red-500 text-red-500 rounded-xl hover:bg-red-500/10 transition-colors text-sm font-medium disabled:opacity-50"
                  title="Delete"
                >
                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
@@ -237,6 +270,7 @@ const EditElementModal: React.FC<EditElementModalProps> = ({
                </button>
              </div>
           </div>
+
         </div>
 
         {isAddChildOpen && (
@@ -253,8 +287,8 @@ const EditElementModal: React.FC<EditElementModalProps> = ({
                     className="w-full bg-[var(--bg-primary)] text-[var(--text-primary)] p-2 rounded mb-4 border border-transparent focus:border-[var(--text-primary)] outline-none"
                   />
                   <div className="flex justify-end gap-2">
-                    <button type="button" onClick={() => setIsAddChildOpen(false)} className="px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)]">Cancel</button>
-                    <button type="submit" className="px-4 py-2 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded hover:opacity-90">Add</button>
+                    <button type="button" onClick={() => setIsAddChildOpen(false)} className="px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)]" disabled={isSubmitting}>Cancel</button>
+                    <button type="submit" className="px-4 py-2 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded hover:opacity-90 disabled:opacity-50" disabled={isSubmitting}>Add</button>
                   </div>
                 </form>
              </div>

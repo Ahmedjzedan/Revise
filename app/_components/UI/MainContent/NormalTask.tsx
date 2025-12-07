@@ -29,6 +29,7 @@ const NormalTask: React.FC<NormalTaskProps> = ({
   const [showTimer, setShowTimer] = useState(false);
 
   const handleCompletion = async () => {
+    if (isCompleted) return;
     setIsCompleted(true);
     setShowTimer(true);
     
