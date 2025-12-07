@@ -31,7 +31,7 @@ export async function addNodeAction(pageId: number, title: string, maxFullness: 
       type,
       position: newPosition,
     }).returning();
-    revalidateTag(`nodes-${pageId}`);
+    revalidateTag(`nodes-${pageId}`, {});
     return { success: true, node: result[0] };
   } catch (error) {
     console.error("Error adding node:", error);
@@ -47,7 +47,7 @@ export async function updateNodeAction(nodeId: number, data: { title?: string; c
       .returning({ pageId: nodes.pageId });
     
     if (result[0]) {
-      revalidateTag(`nodes-${result[0].pageId}`);
+      revalidateTag(`nodes-${result[0].pageId}`, {});
     }
     return { success: true };
   } catch (error) {
@@ -63,7 +63,7 @@ export async function deleteNodeAction(nodeId: number) {
       .returning({ pageId: nodes.pageId });
 
     if (result[0]) {
-      revalidateTag(`nodes-${result[0].pageId}`);
+      revalidateTag(`nodes-${result[0].pageId}`, {});
     }
     return { success: true };
   } catch (error) {
@@ -104,7 +104,7 @@ export async function moveNodeAction(nodeId: number, direction: "up" | "down", p
           .set({ position: adjacentNode.position || 0 })
           .where(eq(nodes.id, nodeId));
       });
-      revalidateTag(`nodes-${pageId}`);
+      revalidateTag(`nodes-${pageId}`, {});
     } else {
       return { success: false, message: "Cannot move further" };
     }
@@ -124,7 +124,7 @@ export async function updateNodeFullnessAction(nodeId: number, newFullness: numb
       .returning({ pageId: nodes.pageId });
 
     if (result[0]) {
-      revalidateTag(`nodes-${result[0].pageId}`);
+      revalidateTag(`nodes-${result[0].pageId}`, {});
     }
     return { success: true };
   } catch (error) {
@@ -148,7 +148,7 @@ export async function reorderNodesAction(updates: { id: number; position: number
       }
     }
     if (pageId) {
-      revalidateTag(`nodes-${pageId}`);
+      revalidateTag(`nodes-${pageId}`, {});
     }
     return { success: true };
   } catch (error) {
@@ -174,7 +174,7 @@ export async function toggleNodeCompletion(nodeId: number, completed: boolean) {
       .returning({ pageId: nodes.pageId });
 
     if (result[0]) {
-      revalidateTag(`nodes-${result[0].pageId}`);
+      revalidateTag(`nodes-${result[0].pageId}`, {});
     }
     return { success: true };
   } catch (error) {
@@ -191,7 +191,7 @@ export async function togglePinAction(nodeId: number, pinned: boolean) {
       .returning({ pageId: nodes.pageId });
 
     if (result[0]) {
-      revalidateTag(`nodes-${result[0].pageId}`);
+      revalidateTag(`nodes-${result[0].pageId}`, {});
     }
     return { success: true };
   } catch (error) {

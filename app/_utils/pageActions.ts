@@ -18,10 +18,10 @@ export async function renamePage(pageId: number, newTitle: string, userId: numbe
       .where(and(eq(pages.id, pageId), eq(pages.userId, userId)));
     
     if (oldPage) {
-      revalidateTag(`page-id-${userId}-${oldPage.title}`);
+      revalidateTag(`page-id-${userId}-${oldPage.title}`, {});
     }
     // Also invalidate the new title just in case (though it should be empty/miss)
-    revalidateTag(`page-id-${userId}-${newTitle}`);
+    revalidateTag(`page-id-${userId}-${newTitle}`, {});
     
     revalidatePath(`/${userId}`);
     return { success: true };
@@ -42,7 +42,7 @@ export async function deletePageAction(pageId: number, userId: number) {
     await db.delete(pages).where(and(eq(pages.id, pageId), eq(pages.userId, userId)));
     
     if (page) {
-      revalidateTag(`page-id-${userId}-${page.title}`);
+      revalidateTag(`page-id-${userId}-${page.title}`, {});
     }
 
     revalidatePath(`/${userId}`);

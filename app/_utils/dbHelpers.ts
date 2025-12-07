@@ -68,7 +68,7 @@ export async function addPage(
     userId: numericUserId,
   });
   
-  revalidateTag(`page-id-${userId}-${pageData.title}`);
+  revalidateTag(`page-id-${userId}-${pageData.title}`, {});
   revalidatePath(`/${userId}`);
 
   return result.lastInsertRowid;
